@@ -18,6 +18,8 @@ If you want to use HIM in a published work, please use the following citation:
 ### If you want to develope the model further:
 - Install needed packages with `pip install -r requirements.txt`
 ## Usage
+### Prepare Data
+- Follow the steps outlined in [Data](#Data) to replace the dummy files in `01_Data`
 ### Using the standalone model in NetLogo:
 - You can just double click on main.nlogo file and use the model with the GUI of NetLogo.
 ### Using the python scripte:
