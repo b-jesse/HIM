@@ -60,9 +60,9 @@ If you want the figures from our paper:
 ## Data
 
 The data used for our model results are based on:
-|Data|Source|
+|:_Data_|**Source**|
 |----|------|
-|Power market||
+|*Power market*||
 |Non-electrolytic electricity demand|[1,2]|
 |Installed capacity renewables|[1]|
 |Lifetime renewable asset|[80]|
@@ -70,18 +70,18 @@ The data used for our model results are based on:
 |Gas turbine efficiency|[82]|
 |Investment costs renewable asset|[80]|
 |Capacity factor renewable asset|[83,84]|
-|Hydrogen market||
+|*Hydrogen market*||
 |Maximum hydrogen demand|[79]|
 |Installed capacity electrolyzers|[85]|
 |Lifetime electrolyzer asset|[86]|
 |Electrolyzer efficiency|[55]
 |Steam reforming efficiency|[87]|
-|Electrolyzer market||
+|*Electrolyzer market*||
 |Installed capacity electrolyzer factories|[9]|
 |Investment costs electrolyzer factory|[88–90]|
 |Production costs|[9,91]|
 |Learning rate electrolyzers|[55,67]|
-|Global||		
+|*Global*||		
 |CO2 price|[79]|
 
 
