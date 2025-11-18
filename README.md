@@ -76,18 +76,18 @@ If you want the figures from our paper:
 ## Data
 
 ### Prepare data
-#### Capacitiy factor renewables
-- Get capacity factor for renewables, e.g. from [renewables.ninja](https://www.renewables.ninja/)
-- Weight data based on installed capacity of PV, Wind Onshore & Offshore, e.g. 49%:45%:6%
-- Aggregate data on daily basis
-  
-#### Non-electrolytic load
-- Get load data, e.g. from [entso-e](https://transparency.entsoe.eu/)
+#### Non-electrolytic electricity demand
+- Get electricity demand data, e.g. from [entso-e](https://transparency.entsoe.eu/)
 - Normalize data with yearly load
 - Aggregate data on daily basis
 
+#### Capacity factor renewables
+- Get capacity factor for renewables, e.g. from [renewables.ninja](https://www.renewables.ninja/)
+- Weight data based on installed capacity of PV, Wind Onshore & Offshore, e.g. 49%:45%:6%
+- Aggregate data on daily basis
+
 #### Save data
-- Save both data as ts_demand_daily.csv in `01_Data`
+- Save both data as `pm_ts_demand_daily.csv` in `01_Data`
 
 The data used for our model results are based on:
 |Data|Source|
