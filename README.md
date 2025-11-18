@@ -62,11 +62,11 @@ If you want the figures from our paper:
 ## Data
 ### Prepare data
 #### Capacitiy factor renewables
-- Get capacity factor for renewables, e.g. from (renewables.ninja)[https://www.renewables.ninja/]
+- Get capacity factor for renewables, e.g. from [renewables.ninja](https://www.renewables.ninja/)
 - Weight data based on installed capacity of PV, Wind Onshore & Offshore, e.g. 49%:45%:6%
 - Aggregate data on daily basis
 #### Non-electrolytic load
-- Get load data, e.g. from (/entso-e)[https://transparency.entsoe.eu/]
+- Get load data, e.g. from [entso-e](https://transparency.entsoe.eu/)
 - Normalize data with yearly load
 - Aggregate data on daily basis
 #### Save data
