@@ -69,7 +69,7 @@ The data used for our model results are based on:
 |Natural gas price|[[4](https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Pink-Sheet-August-2025.pdf)]|
 |Gas turbine efficiency|[[5](https://doi.org/10.1016/j.energy.2025.134680)]|
 |Investment costs renewable asset|[[3](https://juser.fz-juelich.de/record/908382/files/Energie_Umwelt_577.pdf)]|
-|Capacity factor renewable asset|[[6](https://doi.org/10.1016/j.energy.2016.08.060),[7](https://doi.org/10.1016/j.energy.2016.08.068)|
+|Capacity factor renewable asset|[[6](https://doi.org/10.1016/j.energy.2016.08.060),[7](https://doi.org/10.1016/j.energy.2016.08.068)]|
 |*Hydrogen market*||
 |Maximum hydrogen demand|[[8](https://media-publications.bcg.com/Turning-the-European-Green-H2-Dream-into-Reality.pdf)]|
 |Installed capacity electrolyzers|[[9](https://www.wasserstoff-kompass.de/elektrolyse-monitor)]|
