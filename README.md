@@ -4,7 +4,7 @@
 # HIM - Hydrogen Investment Model
 HIM is an agent-based model for investment decisions in the German electricity and green hydrogen sectors. The included scripts allow the model to run without the GUI of Netlogo and multiple runs in parallel. It allows to generate the results from our paper `Exploring the Scale-up of a Green Hydrogen Industry: An Agent-Based Modeling Approach` in the International Journal for Hydrogen Energy. 
 
-<img src="https://jugit.fz-juelich.de/b.jesse/him/-/raw/main/Figure-1.png" alt="Model overview" width="600px">
+<img src="https://github.com/b-jesse/HIM/blob/main/00_Setup/Figure-1.png?raw=true" alt="Model overview" width="600px">
 
 The model itself is written for [NetLogo v.6.4.0](https://www.netlogo.org/). Pre- and postprocessing scripts are written in python.
 If you want to use HIM in a published work, please use the following citation:
@@ -47,13 +47,13 @@ For the validation of our model:
 - Open the consol of your choice (e.g. minipromt)
 - Activate your new environment with `conda activate myenv`
 - Move to the HIM folder (i.e. `C:\\User\\O3_Python`)
-- Follow the instruction in [instruction_validation.mb](https://jugit.fz-juelich.de/b.jesse/him/-/blob/main/00_Setup/instruction_validation.md) in `00_Setup` to create all necessary results
+- Follow the instruction in [instruction_validation.mb](https://github.com/b-jesse/HIM/blob/main/00_Setup/instruction_validation.md) in `00_Setup` to create all necessary results
   
 For recreating our results:
 - Open the consol of your choice (e.g. minipromt)
 - Activate your new environment with `conda activate myenv`
 - Move to the HIM folder (i.e. `C:\\User\\O3_Python`)
-- Follow the instruction in [instruction_paper.mb](https://jugit.fz-juelich.de/b.jesse/him/-/blob/main/00_Setup/instruction_paper.md) in `00_Setup` to create all necessary results
+- Follow the instruction in [instruction_paper.mb](https://github.com/b-jesse/HIM/blob/main/00_Setup/instruction_paper.md) in `00_Setup` to create all necessary results
   
 For postprocessing:
 - Open the consol of your choice (e.g. minipromt)
