@@ -59,7 +59,31 @@ If you want the figures from our paper:
 
 ## Data
 
-The data in our model is based on:
+The data used for our model results are based on:
+|Data|Source|
+|----|------|
+|Power market||
+|Non-electrolytic electricity demand|[1,2]|
+|Installed capacity renewables|[1]|
+|Lifetime renewable asset|[80]|
+|Natural gas price|[81]|
+|Gas turbine efficiency|[82]|
+|Investment costs renewable asset|[80]|
+|Capacity factor renewable asset|[83,84]|
+|Hydrogen market||
+|Maximum hydrogen demand|[79]|
+|Installed capacity electrolyzers|[85]|
+|Lifetime electrolyzer asset|[86]|
+|Electrolyzer efficiency|[55]
+|Steam reforming efficiency|[87]|
+|Electrolyzer market||
+|Installed capacity electrolyzer factories|[9]|
+|Investment costs electrolyzer factory|[88–90]|
+|Production costs|[9,91]|
+|Learning rate electrolyzers|[55,67]|
+|Global||		
+|CO2 price|[79]|
+
 
 ## Contributing
 Contributions are highly welcome. Feel free to send me pull requests.
@@ -78,8 +102,8 @@ Active Developers: Bernhard-Johannes Jesse
 
 Alumni: Bernhard-Johannes Jesse
 
-You should have received a copy of the MIT License along with this program.
-If not, see https://opensource.org/licenses/MIT
+You should have received a copy of the CC BY-NC License along with this program.
+If not, see https://creativecommons.org/licenses/by-nc/4.0/legalcode.en
 
 ## Acknowledgement
 This work was supported by the Helmholtz Association under the program ["Energy System Design"](https://www.helmholtz.de/en/research/research-fields/energy/energy-system-design/).
