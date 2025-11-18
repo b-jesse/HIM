@@ -1,33 +1,3 @@
-
-Primary navigation
-Homepage
-Project
-
-    H
-    HIM - Hydrogen Investment Model
-
-    Issues
-    0
-
-Merge requests
-0
-
-You can't push or pull repositories using SSH until you add an SSH key to your profile.
-
-    Jesse, Bernhard
-    HIM - Hydrogen Investment Model
-
-    him
-    README.md
-
-README.md
-Jesse, Bernhard's avatar
-Edit README.md
-Jesse, Bernhard authored 5 days ago
-9139c717
-README.md
-6.34 KiB
-
 <a href="https://www.fz-juelich.de/en/ice/ice-2"><img src="https://github.com/FZJ-IEK3-VSA/README_assets/blob/main/JSA-Header.svg?raw=True" alt="Forschungszentrum Juelich Logo" width="300px"></a>
 <a href="https://www.uu.nl/en"><img src="https://www.uu.nl/themes/custom/corp/src/images/uu-logo-en.svg" alt="Utrecht University Logo" width="300px"></a>
 # HIM - Hydrogen Investment Model
@@ -87,6 +57,10 @@ If you want the figures from our paper:
 
 **!This has only been tested with our version of Python, Netlogo, and Windows.**!
 
+## Data
+
+The data in our model is based on:
+
 ## Contributing
 Contributions are highly welcome. Feel free to send me pull requests.
 
@@ -96,7 +70,7 @@ Contributions are highly welcome. Feel free to send me pull requests.
 We are the <a href="https://www.fz-juelich.de/en/ice/ice-2">Institute of Climate and Energy Systems (ICE) - Jülich Systems Analysis</a> belonging to the <a href="https://www.fz-juelich.de/en">Forschungszentrum Jülich</a>. Our interdisciplinary department's research is focusing on energy-related process and systems analyses. Data searches and system simulations are used to determine energy and mass balances, as well as to evaluate performance, emissions and costs of energy systems. The results are used for performing comparative assessment studies between the various systems. Our current priorities include the development of energy strategies, in accordance with the German Federal Government’s greenhouse gas reduction targets, by designing new infrastructures for sustainable and secure energy supply chains and by conducting cost analysis studies for integrating new technologies into future energy market frameworks.
 
 ## License
-CC-BY NC 4.0
+CC BY-NC 4.0
 
 Copyright (C) 2025 FZJ-ICE-2
 
