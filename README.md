@@ -19,7 +19,7 @@ If you want to use HIM in a published work, please use the following citation:
 - Install needed packages with `pip install -r requirements.txt`
 ## Usage
 ### Prepare Data
-- Follow the steps outlined in [Data](#Data) to replace the dummy files in `01_Data`
+- Follow the steps outlined in [Prepare data](#Prepare-data) to replace the dummy files in `01_Data`
 ### Using the standalone model in NetLogo:
 - You can just double click on main.nlogo file and use the model with the GUI of NetLogo.
 ### Using the python scripte:
@@ -60,6 +60,15 @@ If you want the figures from our paper:
 **!This has only been tested with our version of Python, Netlogo, and Windows.**!
 
 ## Data
+### Prepare data
+#### Capacitiy factor renewables
+- Get capacity factor for renewables, e.g. from (https://www.renewables.ninja/)[https://www.renewables.ninja/]
+- Weight data based on installed capacity of PV, Wind Onshore & Offshore, e.g. 49%:45%:6%
+- Aggregate data on daily basis
+#### Non-electrolytic load
+- Get load data, e.g. from (https://entsoe.eu/)[https://transparency.entsoe.eu/]
+- Normalize data with yearly load
+- Aggregate data on daily basis
 
 The data used for our model results are based on:
 |Data|Source|
@@ -85,7 +94,6 @@ The data used for our model results are based on:
 |Learning rate electrolyzers|[[11](https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Dec/IRENA_Green_hydrogen_cost_2020.pdf),[18](https://doi.org/10.1016/j.ijhydene.2023.05.031)]|
 |*Global*||		
 |CO2 price|[[8](https://media-publications.bcg.com/Turning-the-European-Green-H2-Dream-into-Reality.pdf)]|
-
 
 ## Contributing
 Contributions are highly welcome. Feel free to send me pull requests.
