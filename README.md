@@ -18,7 +18,7 @@ If you want to use HIM in a published work, please use the following citation:
 ### If you want to develope the model further:
 - Install needed packages with `pip install -r requirements.txt`
 ## Usage
-### Prepare Data
+### Prepare files
 - Follow the steps outlined in [Prepare data](#Prepare-data) to replace the dummy files in `01_Data`
 ### Using the standalone model in NetLogo:
 - You can just double click on main.nlogo file and use the model with the GUI of NetLogo.
@@ -69,6 +69,8 @@ If you want the figures from our paper:
 - Get load data, e.g. from (https://entsoe.eu/)[https://transparency.entsoe.eu/]
 - Normalize data with yearly load
 - Aggregate data on daily basis
+#### Save data
+- Save both data as ts_demand_daily.csv in `01_Data`
 
 The data used for our model results are based on:
 |Data|Source|
