@@ -65,24 +65,24 @@ The data used for our model results are based on:
 |*Power market*||
 |Non-electrolytic electricity demand|[[1](https://www.smard.de/home),[2](https://doi.org/10.1016/j.esr.2018.04.007)]|
 |Installed capacity renewables|[[1](https://www.smard.de/home)]|
-|Lifetime renewable asset|[80]|
-|Natural gas price|[81]|
-|Gas turbine efficiency|[82]|
-|Investment costs renewable asset|[80]|
-|Capacity factor renewable asset|[83,84]|
+|Lifetime renewable asset|[[3](https://juser.fz-juelich.de/record/908382/files/Energie_Umwelt_577.pdf)]|
+|Natural gas price|[[4](https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Pink-Sheet-August-2025.pdf)]|
+|Gas turbine efficiency|[[5](https://doi.org/10.1016/j.energy.2025.134680)]|
+|Investment costs renewable asset|[[3](https://juser.fz-juelich.de/record/908382/files/Energie_Umwelt_577.pdf)]|
+|Capacity factor renewable asset|[[6](https://doi.org/10.1016/j.energy.2016.08.060),[7](https://doi.org/10.1016/j.energy.2016.08.068)|
 |*Hydrogen market*||
-|Maximum hydrogen demand|[79]|
-|Installed capacity electrolyzers|[85]|
-|Lifetime electrolyzer asset|[86]|
-|Electrolyzer efficiency|[55]
-|Steam reforming efficiency|[87]|
+|Maximum hydrogen demand|[[8](https://media-publications.bcg.com/Turning-the-European-Green-H2-Dream-into-Reality.pdf)]|
+|Installed capacity electrolyzers|[[9](https://www.wasserstoff-kompass.de/elektrolyse-monitor)]|
+|Lifetime electrolyzer asset|[[10](https://doi.org/10.1016/j.ijhydene.2013.01.151)]|
+|Electrolyzer efficiency|[[11](https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Dec/IRENA_Green_hydrogen_cost_2020.pdf)]|
+|Steam reforming efficiency|[12](https://www.amiqweb.es/app/download/9343795/6hydrogenproductionsteammethanereforming.pdf)]|
 |*Electrolyzer market*||
-|Installed capacity electrolyzer factories|[9]|
-|Investment costs electrolyzer factory|[88–90]|
-|Production costs|[9,91]|
-|Learning rate electrolyzers|[55,67]|
+|Installed capacity electrolyzer factories|[[13](https://www.iea.org/reports/global-hydrogen-review-2023)]|
+|Investment costs electrolyzer factory|[[14](https://www.topsoe.com/press-releases/topsoe-announces-plans-for-new-state-of-the-art-us-electrolyzer-factory-for-clean-hydrogen),[15](https://nelhydrogen.com/articles/in-depth/nel-plans-gigafactory-in-michigan/),[16](https://www.spglobal.com/commodity-insights/en/news-research/latest-news/electric-power/110921-itm-power-to-build-second-uk-electrolyzer-factory-as-it-eyes-rapid-hydrogen-market-expansion)]|
+|Production costs|[[13](https://www.iea.org/reports/global-hydrogen-review-2023),[17](https://observatory.clean-hydrogen.europa.eu/hydrogen-landscape/production-trade-and-cost/electrolyser-cost)]|
+|Learning rate electrolyzers|[[11](https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Dec/IRENA_Green_hydrogen_cost_2020.pdf),[18](https://doi.org/10.1016/j.ijhydene.2023.05.031)]|
 |*Global*||		
-|CO2 price|[79]|
+|CO2 price|[[8](https://media-publications.bcg.com/Turning-the-European-Green-H2-Dream-into-Reality.pdf)]|
 
 
 ## Contributing
