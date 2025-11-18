@@ -60,11 +60,11 @@ If you want the figures from our paper:
 ## Data
 
 The data used for our model results are based on:
-|:_Data_|**Source**|
+|Data|Source|
 |----|------|
 |*Power market*||
-|Non-electrolytic electricity demand|[1,2]|
-|Installed capacity renewables|[1]|
+|Non-electrolytic electricity demand|[[1](https://www.smard.de/home),[2](https://doi.org/10.1016/j.esr.2018.04.007)]|
+|Installed capacity renewables|[[1](https://www.smard.de/home)]|
 |Lifetime renewable asset|[80]|
 |Natural gas price|[81]|
 |Gas turbine efficiency|[82]|
