@@ -105,7 +105,7 @@ The data used for our model results are based on:
 |Installed capacity electrolyzers|[[9](https://www.wasserstoff-kompass.de/elektrolyse-monitor)]|
 |Lifetime electrolyzer asset|[[10](https://doi.org/10.1016/j.ijhydene.2013.01.151)]|
 |Electrolyzer efficiency|[[11](https://www.irena.org/-/media/Files/IRENA/Agency/Publication/2020/Dec/IRENA_Green_hydrogen_cost_2020.pdf)]|
-|Steam reforming efficiency|[12](https://www.amiqweb.es/app/download/9343795/6hydrogenproductionsteammethanereforming.pdf)]|
+|Steam reforming efficiency|[[12](https://www.amiqweb.es/app/download/9343795/6hydrogenproductionsteammethanereforming.pdf)]|
 |*Electrolyzer market*||
 |Installed capacity electrolyzer factories|[[13](https://www.iea.org/reports/global-hydrogen-review-2023)]|
 |Investment costs electrolyzer factory|[[14](https://www.topsoe.com/press-releases/topsoe-announces-plans-for-new-state-of-the-art-us-electrolyzer-factory-for-clean-hydrogen),[15](https://nelhydrogen.com/articles/in-depth/nel-plans-gigafactory-in-michigan/),[16](https://www.spglobal.com/commodity-insights/en/news-research/latest-news/electric-power/110921-itm-power-to-build-second-uk-electrolyzer-factory-as-it-eyes-rapid-hydrogen-market-expansion)]|
