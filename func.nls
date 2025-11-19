@@ -1,0 +1,3071 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ----------------------------------------------- Functions ------------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------- General ------------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to-report func.tanh [tmp.x]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Tangens hyperbolicus
+  ;; IN: float tmp.x - x [-]
+  ;; OUT: float tmp.y - tanh(x) [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  if tmp.x > 50 [
+    set tmp.x 50
+  ]
+  let tmp.y (1 - 2 / (e ^ (2 * tmp.x) + 1))
+  report tmp.y
+end
+
+to-report func.scalar_mult [tmp.scalar tmp.list]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Scalar multiplication of a number and a list
+  ;; IN: float tmp.scalar - value for multiplication [-]
+  ;;     list tmp.list - vector for multiplication [-]
+  ;; OUT: list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  foreach tmp.list [
+    x -> 
+    set tmp.results lput (tmp.scalar * x) tmp.results
+  ]
+  report tmp.results
+end
+
+to-report func.scalar_div [tmp.scalar tmp.list]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Scalar division of a number and a list
+  ;; IN: float tmp.scalar - denominator for division [-]
+  ;;     list tmp.list - numerator for division [-]
+  ;; OUT: list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  foreach tmp.list [
+    x -> 
+    set tmp.results lput (x / tmp.scalar) tmp.results
+  ]
+  report tmp.results
+end
+
+to-report func.vector_mult [tmp.list_I tmp.list_II]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Vector multiplication of two lists
+  ;; IN: list tmp.list_I - value for multiplication [-]
+  ;;     list tmp.list_II - value for multiplication [-]
+  ;; OUT list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  (foreach tmp.list_I tmp.list_II [
+    [x y] ->
+    set tmp.results lput (x * y) tmp.results
+  ])
+  report tmp.results
+end
+
+to-report func.vector_add [tmp.list_I tmp.list_II]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Vector addition of two lists
+  ;; IN: list tmp.list_I - summand for addition [-]
+  ;;     list tmp.list_II - summand for addition [-]
+  ;; OUT list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  (foreach tmp.list_I tmp.list_II [
+    [x y] ->
+    set tmp.results lput (x + y) tmp.results
+  ])
+  report tmp.results
+end
+
+to-report func.vector_div [tmp.list_I tmp.list_II]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Vector division of two lists
+  ;; IN: list tmp.list_I - numerator for division [-]
+  ;;     list tmp.list_II - denominator for division [-]
+  ;; OUT list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  (foreach tmp.list_I tmp.list_II [
+    [x y] ->
+    set tmp.results lput (x / y) tmp.results
+  ])
+  report tmp.results
+end
+
+to-report func.vector_sub [tmp.list_I tmp.list_II]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Vector subtraction of two lists
+  ;; IN: list tmp.list_I - minuend for substraction [-]
+  ;;     list tmp.list_II - substrahend for substraction [-]
+  ;; OUT list tmp.results - vector with results [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.results []
+  (foreach tmp.list_I tmp.list_II [
+    [x y] ->
+    set tmp.results lput (x - y) tmp.results
+  ])
+  report tmp.results
+end
+
+to-report func.get_date []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the current date in the format YYYYYMMDD
+  ;; IN: -
+  ;; OUT: str tmp.date - current date in the format
+  ;;                     YYYYMMDDHHMM [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.string date-and-time
+  
+  ;; Year
+  let tmp.year substring tmp.string (length tmp.string - 4) length tmp.string
+  
+  ;; Month
+  let tmp.month substring tmp.string 19 22
+      
+  (ifelse
+    tmp.month = "Jan" [
+      set tmp.month "01"
+    ]
+    tmp.month = "Feb" [
+      set tmp.month "02"
+    ]
+    tmp.month = "Mär" [
+      set tmp.month "03"
+    ]
+    tmp.month = "Apr" [
+      set tmp.month "04"
+    ]
+    tmp.month = "Mai" [
+      set tmp.month "05"
+    ]
+    tmp.month = "Jun" [
+      set tmp.month "06"
+    ]
+    tmp.month = "Jul" [
+      set tmp.month "07"
+    ]
+    tmp.month = "Aug" [
+      set tmp.month "08"
+    ]
+    tmp.month = "Sep" [
+      set tmp.month "09"
+    ]
+    tmp.month = "Okt" [
+      set tmp.month "10"
+    ]
+    tmp.month = "Nov" [
+      set tmp.month "11"
+    ]
+    tmp.month = "Dez" [
+      set tmp.month "12"
+    ][
+      print "Error 101: Unknown month in func.get_date"
+    ]
+  )
+  
+  ;; Day
+  let tmp.day substring tmp.string 16 18
+  
+  ;; Hour
+  let tmp.hour substring tmp.string 0 2
+  let tmp.am substring tmp.string 13 15
+  (ifelse
+    tmp.am = "AM" [
+      if tmp.hour = "12" [
+        set tmp.hour "00"
+      ]
+    ]
+    tmp.am = "PM" [
+      (ifelse
+        tmp.hour = "01" [
+          set tmp.hour "13"
+        ]
+        tmp.hour = "02" [
+          set tmp.hour "14"
+        ]
+        tmp.hour = "03" [
+          set tmp.hour "15"
+        ]
+        tmp.hour = "04" [
+          set tmp.hour "16"
+        ]
+        tmp.hour = "05" [
+          set tmp.hour "17"
+        ]
+        tmp.hour = "06" [
+          set tmp.hour "18"
+        ]
+        tmp.hour = "07" [
+          set tmp.hour "19"
+        ]
+        tmp.hour = "08" [
+          set tmp.hour "20"
+        ]
+        tmp.hour = "09" [
+          set tmp.hour "21"
+        ]
+        tmp.hour = "10" [
+          set tmp.hour "22"
+        ]
+        tmp.hour = "11" [
+          set tmp.hour "23"
+        ]
+        )
+    ]
+    )
+  
+  ;; Minutes
+  let tmp.minute substring tmp.string 3 5
+  
+  ;; Concatenates everything together
+  let tmp.date word word word word tmp.year tmp.month tmp.day tmp.hour tmp.minute
+    
+  report tmp.date
+end
+
+to-report func.check_any_file_exists [tmp.list]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Checks if any of the files in the list exists
+  ;; IN: list tmp.list - list of files to check [-]
+  ;; OUT: boolean tmp.check - true if at least one file exits,
+  ;;                          false if none of the files exits
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.check false
+  let tmp.exists map [f -> file-exists? f] tmp.list
+  set tmp.check member? true tmp.exists
+  
+  report tmp.check
+end
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ---------------------------------------------- Power market ---------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to func.pm.daily []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 3.1 Power market daily actions
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Determines the daily production of renewables, the daily
+  ;; electricity price and save these values in the market,
+  ;; agents and assets.
+  ;; 3.1.1 Get maximal renewable production
+  ;; 3.1.2 Get electricity demand
+  ;; 3.1.3 Calculate RES utilisation, RES production, RES share
+  ;;       ELC demand, ELC price 
+  ;; 3.1.4 Apply governmental actions to elc price (optional)
+  ;; 3.1.5 Save data
+  ;; 3.1.5.1 Save data for market
+  ;; 3.1.5.2 Save data for renewables
+  ;; 3.1.5.3 Save data for agents
+  ;; 3.1.6 Write data (optional)
+  ;; 3.1.7 Plot data (optional)
+  ;; 3.1.8 Track data (optional)
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 3.1.1 Get maximal renewable production
+  let tmp.production_res_max func.scalar_mult ((sum [RES.capacity] of Renewables) * 24) func.pm.get_res_capacity_factor
+  
+  ;; 3.1.2 Get electricity demand other
+  let tmp.demand_elc_other func.pm.get_elc_demand_other
+  
+  ;; 3.1.3 Calculate RES utilisation, RES production, RES share, ELC price, ELC demand
+  let tmp.util []
+  let tmp.production []
+  let tmp.share []
+  let tmp.price []
+  let tmp.payout []
+  let tmp.demand []  
+  let tmp.cases [0 0 0]
+  ifelse length tmp.production_res_max = length tmp.demand_elc_other [
+    (foreach func.pm.get_res_capacity_factor tmp.production_res_max tmp.demand_elc_other [
+      [x y z] ->
+      (ifelse
+        ;; Case 1: Production renewables < electricity demand others 
+        y < z [
+          set tmp.util lput x tmp.util
+          set tmp.price lput (func.pm.get_gas_price / const.eta_gas_turbine) tmp.price
+          set tmp.share lput (y / z) tmp.share
+          set tmp.demand lput z tmp.demand
+          set tmp.cases replace-item 0 tmp.cases (item 0 tmp.cases + 1)
+        ]
+        ;; Case 2: Electricity demand other < Production renewables < Electricity demand others + Capacity Electrolyzers
+        y >= z and y < (z + ((sum [ELC.capacity] of Electrolyzers) * 24)) [
+          set tmp.util lput x tmp.util
+          set tmp.price lput (global.HM.price_h2 * const.eta_electrolyzer) tmp.price
+          set tmp.share lput 1 tmp.share
+          set tmp.demand lput y tmp.demand
+          set tmp.cases replace-item 1 tmp.cases (item 1 tmp.cases + 1)
+        ]
+        ;; Case 3: Production renewables > Electricity demand others + Capacity Electrolyzers
+        y >= (z + ((sum [ELC.capacity] of Electrolyzers) * 24)) [
+          set tmp.util lput ((z + ((sum [ELC.capacity] of Electrolyzers) * 24)) / ((sum [RES.capacity] of Renewables) * 24)) tmp.util
+          set tmp.share lput 1 tmp.share
+          set tmp.demand lput (z + ((sum [ELC.capacity] of Electrolyzers) * 24)) tmp.demand
+          set tmp.cases replace-item 2 tmp.cases (item 2 tmp.cases + 1)
+          ifelse (sum [ELC.capacity] of Electrolyzers) > 0 [
+            set tmp.price lput const.PM.p_elc_min tmp.price
+          ][
+            set tmp.price lput 0 tmp.price
+          ]
+        ]
+      )
+     ]
+    )
+    set tmp.cases func.scalar_div (sum tmp.cases) tmp.cases
+    set tmp.production func.scalar_mult ((sum [RES.capacity] of Renewables) * 24) tmp.util
+  ][
+    print "Error 331: Mismatched length in func.pm.daily."
+  ]
+  
+  ;; 3.1.4 Apply governmental actions to elc price (optional)
+  set tmp.payout tmp.price
+  if scenario.power_subsidy or scenario.power_guarant [
+    set tmp.payout []
+    (foreach tmp.price [
+      [x] -> 
+      set tmp.payout lput (func.pm.get_elc_payout x) tmp.payout
+      ]
+    )
+  ]
+  
+  ;; 3.1.5 Save data
+  ;; 3.1.5.1 Save data for market
+  set global.PM.list_demand tmp.demand
+  set global.PM.list_util tmp.util
+  set global.PM.list_production tmp.production
+  set global.PM.list_price tmp.price
+  set global.PM.list_payout tmp.payout
+  set global.PM.list_shares tmp.share
+  set global.PM.cost_share tmp.cases
+  ifelse (sum global.PM.list_production) > 0 [
+    set global.PM.lcoe ((sum [RES.investment * RES.crf] of Renewables with [RES.age <= const.RES.lifetime]) / (sum tmp.production))
+  ][
+    set global.PM.lcoe 1e10
+  ]
+  
+  ;; 3.1.5.2 Save data for renewables
+  ask Renewables [
+    set RES.income sum (func.vector_mult (func.scalar_mult (RES.capacity * 24) tmp.util) tmp.payout)
+    set RES.production sum tmp.util * RES.capacity * 24
+    set RES.production_cumulative RES.production_cumulative + RES.production
+    set RES.util mean tmp.util
+    set RES.list_util tmp.util
+    set RES.list_produced func.scalar_mult (RES.capacity * 24) tmp.util
+    set RES.list_income func.vector_mult RES.list_produced tmp.payout
+    ifelse RES.production > 0 [
+      ifelse RES.age > const.RES.lifetime [
+        set RES.lcoe 0
+      ][
+        set RES.lcoe (RES.crf * RES.investment / RES.production)
+      ]
+    ][
+      set RES.lcoe 1e10
+    ]
+  ]
+   
+  ;; 3.1.5.3 Save data for agents
+  let tmp.weighted_price 0
+  ask PowerProducers with [PP.alive] [
+    let tmp.owner PP.id
+    set PP.income sum [RES.income] of Renewables with [RES.owner = tmp.owner] 
+    set PP.net_cashflow PP.income
+    set PP.marketshare ((sum [RES.production] of Renewables with [RES.owner = tmp.owner]) / (sum [RES.production] of Renewables))
+    set PP.util (sum [RES.util * RES.capacity] of Renewables with [RES.owner = tmp.owner]) / (sum [RES.capacity] of Renewables with [RES.owner = tmp.owner])
+    set PP.production (sum [RES.production] of Renewables with [RES.owner = tmp.owner])
+    set PP.production_cumulative (PP.production_cumulative + PP.production)
+    set PP.specific_cashflow (PP.net_cashflow / (sum [RES.capacity] of Renewables with [RES.owner = tmp.owner]))
+    ifelse PP.production > 0 [
+      set PP.lcoe ((sum [RES.investment * RES.crf] of Renewables with [RES.owner = tmp.owner and RES.age <= const.RES.lifetime]) / PP.production)
+    ][
+      set PP.lcoe 1e10
+    ]
+    set tmp.weighted_price 0
+    ask Renewables with [RES.owner = tmp.owner] [
+      (foreach RES.list_produced global.PM.list_price [
+        [x y] ->
+        set tmp.weighted_price (tmp.weighted_price + x * y)
+      ])
+    ]
+    set tmp.weighted_price (tmp.weighted_price / (sum [RES.production] of Renewables with [RES.owner = tmp.owner]))
+    set PP.weighted_price tmp.weighted_price
+  ]
+  
+  ;; 3.1.6 Write data (optional)
+  if settings.write [
+    write.PM.day
+  ]
+  
+  ;; 3.1.7 Plot data (optional)
+  if settings.plot [
+    plot.PM.day
+  ]
+    
+  ;; 3.1.8 Track data (optional)
+  if settings.track [
+    set track.PM.list_demand lput global.PM.list_demand track.PM.list_demand
+    set track.PM.list_util lput global.PM.list_util track.PM.list_util
+    set track.PM.list_production lput global.PM.list_production track.PM.list_production
+    set track.PM.list_price lput global.PM.list_price track.PM.list_price
+    set track.PM.list_payout lput global.PM.list_payout track.PM.list_payout
+    set track.PM.list_shares lput global.PM.list_shares track.PM.list_shares
+  ]
+end
+
+to func.pm.yearly []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.1 Power Market yearly actions
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Update the investment threshold of all pps, with the new
+  ;; threshold do a npv to check if pp should invest into a new
+  ;; Renewable. If all pp invest, create a new pp. Calculate and
+  ;; update market values like lcoe. Update Renewables and
+  ;; remove if to old. If a pp has no Renewable left remove the
+  ;; pp. If no PP left optional check if a new pp should be
+  ;; forced and do so. 
+  ;; 4.1.1 Update profitability, investment threshold and 
+  ;;       specific cashflow
+  ;; 4.1.2 Investment decision via NPV and threshold
+  ;; 4.1.2.1 Calculate NPV
+  ;; 4.1.2.2 Create new RES if NPV > I * threshold
+  ;; 4.1.2.3 Update the PP if NPV > I * threshold
+  ;; 4.1.3 Save data
+  ;; 4.1.3.1 Save data for market
+  ;; 4.1.3.2 Save data for renewables
+  ;; 4.1.3.3 Save data for agents
+  ;; 4.1.4 Write data (optional)
+  ;; 4.1.5 Plot data (optional)
+  ;; 4.1.6 Track data (optional)
+  ;; 4.1.7 New PP if all other PP have invested
+  ;; 4.1.8 Update RES age and remove RES if to old and remove PP
+  ;;       if they dont have a RES
+  ;; 4.1.9 New PP if no PP left and time w/o agent > time lag
+  ;;       (optional)
+  ;; 4.1.10 Update or reset data
+  ;; 4.1.10.1 Update or reset data for market
+  ;; 4.1.10.2 Update or reset data for agents
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.1.1 Update profitability, investment threshold and specific cashflow and return on investment
+  ask Renewables [
+    ;; Update profitability and performance expectation ratio    
+    ifelse RES.age > const.RES.lifetime [
+      ifelse RES.income = 0 [
+        set RES.expectation 0
+        set RES.profitability 0
+      ][
+        set RES.expectation 1e10
+        set RES.profitability 1e10
+      ]
+    ][  
+      set RES.expectation (RES.income / (RES.crf * RES.investment * (1 + RES.threshold)))
+      set RES.profitability (RES.income / (RES.crf * RES.investment))
+    ]
+    ;; Update Return on investment
+    set RES.roi (RES.income / RES.investment)
+  ]
+  
+  ask PowerProducers with [PP.alive] [
+    let tmp.owner PP.id
+
+    ;; Update profitiability and performance expectation ratio
+    let tmp.income sum [RES.income] of Renewables with [RES.owner = tmp.owner]
+    let tmp.expense sum [RES.crf * RES.investment] of Renewables with [RES.owner = tmp.owner and RES.age <= const.RES.lifetime]
+    let tmp.expense_expected sum [RES.crf * RES.investment * (1 + RES.threshold)] of Renewables with [RES.owner = tmp.owner and RES.age <= const.RES.lifetime]
+    
+    ifelse tmp.income = 0 [
+      set PP.profitability 0
+      set PP.expectation 0
+    ][
+      ifelse tmp.expense = 0 [
+        set PP.profitability 1e10
+        set PP.expectation 1e10
+      ][
+        set PP.profitability (tmp.income / tmp.expense)
+        set PP.expectation (tmp.income / tmp.expense_expected)
+      ]
+    ]
+    
+    ;; Update return on investment
+    set PP.roi ((sum [RES.income] of Renewables with [RES.owner = tmp.owner]) / (sum [RES.investment] of Renewables with [RES.owner = tmp.owner]))
+    
+    let tmp.delta_threshold func.pm.get_delta_threshold (PP.roi / PP.roi_target) PP.delta_threshold_max
+    set PP.threshold PP.threshold + tmp.delta_threshold
+    if PP.threshold < global.PM.threshold_min [
+      set PP.threshold global.PM.threshold_min
+    ]
+  
+    ;; Update specific_cashflow
+    set PP.specific_cashflow ((sum [RES.income] of Renewables with [RES.owner = tmp.owner]) / (sum [RES.capacity] of Renewables with [RES.owner = tmp.owner]))
+
+    ;; Update wallet
+    set PP.wallet_in tmp.income
+    set PP.wallet_out tmp.expense
+    set PP.wallet (PP.wallet_in - PP.wallet_out)
+  ]
+  
+  ;; 4.1.2 Investment decision via NPV and threshold
+  ask PowerProducers with [PP.alive] [
+    ;; 4.1.2.1 Calculate NPV
+    let tmp.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.RES.lifetime)))
+    let tmp.investment (PP.investment_new * PP.capacity_new)
+    ;; Apply governmental actions to res investment (optional)
+    if scenario.res_subsidy [
+      set tmp.investment (tmp.investment * (1 - GOV.res_subsidy))
+    ]
+    let tmp.npv (-1 * tmp.investment + PP.specific_cashflow  * PP.capacity_new / tmp.crf)
+    
+    ;; Invest into new renewables
+    if (tmp.npv / tmp.investment) >= PP.threshold [    
+      ;; 4.1.2.2 Create new RES if NPV > I * threshold
+      func.pm.create_res_new PP.id xcor ycor PP.capacity_new PP.threshold tmp.investment
+    
+      ;; 4.1.2.3 Update the PP if NPV > I * threshold
+      set PP.invest true
+      set PP.list_assets link-neighbors
+      set PP.capacity_added PP.capacity_new
+      
+      set global.PM.no_investment (global.PM.no_investment + 1)
+      set global.PM.added_capacity (global.PM.added_capacity + PP.capacity_new)
+    ]
+  ]
+
+  ;; 4.1.3 Save data
+  ;; 4.1.3.1 Save data for market
+  let tmp.weighted_price 0
+  (foreach global.PM.list_production global.PM.list_price [
+    [x y] ->
+    set tmp.weighted_price (tmp.weighted_price + x * y)
+  ])
+  ifelse sum global.PM.list_production > 0 [
+    set global.PM.weighted_price (tmp.weighted_price / sum global.PM.list_production) 
+  ][
+    set global.PM.weighted_price 1e10
+  ]
+    
+  ;; 4.1.3.2 Save data for renewables
+  ask Renewables [ 
+    set RES.liquidity (RES.liquidity + RES.income)
+  ]
+    
+  ;; 4.1.3.3 Save data for agents
+  ask PowerProducers with [PP.alive] [
+    let tmp.owner PP.id
+    set PP.liquidity (PP.liquidity + sum [RES.income] of Renewables with [RES.owner = tmp.owner])
+  ]
+  
+  ;; 4.1.4 Write data (optional)
+  if settings.write [
+    write.PM.year
+    write.PP.year
+    write.RES.year
+  ]
+  
+  ;; 4.1.5 Plot data (optional)
+  if settings.plot [
+    plot.PM.year
+  ]
+  
+  ;; 4.1.6 Track data (optional)
+  if settings.track [
+    ;; Power Market
+    set track.PM.no_pp lput global.PM.no_pp track.PM.no_pp
+    set track.PM.no_res lput global.PM.no_res track.PM.no_res
+    set track.PM.no_investment lput global.PM.no_investment track.PM.no_investment
+    set track.PM.installed_capacity lput global.PM.installed_capacity track.PM.installed_capacity
+    set track.PM.cumulative_capacity lput global.PM.cumulative_capacity track.PM.cumulative_capacity
+    set track.PM.added_capacity lput global.PM.added_capacity track.PM.added_capacity
+    set track.PM.threshold_min lput global.PM.threshold_min track.PM.threshold_min
+    set track.PM.lcoe lput global.PM.lcoe track.PM.lcoe
+    set track.PM.weighted_price lput global.PM.weighted_price track.PM.weighted_price
+    set track.PM.cost_share lput global.PM.cost_share track.PM.cost_share
+    set track.PM.time_wo_agent lput global.PM.time_wo_agent track.PM.time_wo_agent
+    
+    ;; PowerProducers
+    ask PowerProducers with [PP.alive] [
+      set PP.track.threshold lput PP.threshold PP.track.threshold
+      set PP.track.income lput PP.income PP.track.income
+      set PP.track.net_cashflow lput PP.net_cashflow PP.track.net_cashflow
+      set PP.track.profitability lput PP.profitability PP.track.profitability
+      set PP.track.marketshare lput PP.marketshare PP.track.marketshare
+      set PP.track.invest lput PP.invest PP.track.invest
+      set PP.track.liquidity lput PP.liquidity PP.track.liquidity
+      set PP.track.capacity_installed lput PP.capacity_installed PP.track.capacity_installed
+      set PP.track.capacity_cumulative lput PP.capacity_cumulative PP.track.capacity_cumulative
+      set PP.track.capacity_new lput PP.capacity_new PP.track.capacity_new
+      set PP.track.util lput PP.util PP.track.util
+      set PP.track.production lput PP.production PP.track.production
+      set PP.track.production_cumulative lput PP.production_cumulative PP.track.production_cumulative
+      set PP.track.specific_cashflow lput PP.specific_cashflow PP.track.specific_cashflow
+      set PP.track.lcoe lput PP.lcoe PP.track.lcoe
+      set PP.track.weighted_price lput PP.weighted_price PP.track.weighted_price
+    ]
+    
+    ;; Renewables
+    ask Renewables [
+      set RES.track.age lput RES.age RES.track.age
+      set RES.track.profitability lput RES.profitability RES.track.profitability
+      set RES.track.income lput RES.income RES.track.income
+      set RES.track.lcoe lput RES.lcoe RES.track.lcoe
+      set RES.track.liquidity lput RES.liquidity RES.track.liquidity
+      set RES.track.production lput RES.production RES.track.production
+      set RES.track.production_cumulative lput RES.production_cumulative RES.track.production_cumulative
+      set RES.track.util lput RES.util RES.track.util
+    ]
+  ]
+  
+  ;; 4.1.7 New PP if all other PP have invested
+  if global.PM.no_investment = count PowerProducers with [PP.alive] and any? PowerProducers with [PP.alive] [
+    func.pm.create_pp_new
+  ]
+  
+  ;; 4.1.8 Update RES age and remove RES if to old and remove PP if they dont have a RES
+  ask Renewables [
+    set RES.age (RES.age + 1)
+    if RES.age > RES.lifetime [
+      die
+    ]
+  ]
+  
+  ask PowerProducers with [PP.alive] [
+    set PP.list_assets link-neighbors
+    if not any? PP.list_assets [
+      set PP.alive false
+    ]
+  ]
+  
+  ;; 4.1.9 New PP if no PP left and time w/o agent > time lag (optional)
+  if is-number? scenario.time_lag and not any? PowerProducers with [PP.alive] [
+    ifelse global.PM.time_wo_agent >= scenario.time_lag [
+      func.pm.create_pp_new
+    ][
+      set global.PM.time_wo_agent (global.PM.time_wo_agent + 1)
+    ]
+  ]
+
+  ;; 4.1.10 Update or reset data
+  ;; 4.1.10.1 Update or reset data for market
+  set global.PM.no_investment 0
+  set global.PM.installed_capacity sum [RES.capacity] of Renewables
+  set global.PM.cumulative_capacity global.PM.cumulative_capacity + global.PM.added_capacity
+  set global.PM.added_capacity 0
+     
+  ;; 4.1.10.2 Update or reset data for agents
+  ask PowerProducers with [PP.alive] [
+    if PP.invest [
+      set PP.capacity_new func.pm.get_capacity_new PP.capacity_new
+      set PP.investment_new func.pm.get_investment_new PP.investment_new
+    ]    
+    let tmp.owner PP.id
+    set PP.capacity_installed sum [RES.capacity] of Renewables with [RES.owner = tmp.owner]
+    set PP.capacity_cumulative PP.capacity_cumulative + PP.capacity_added
+    set PP.capacity_added 0
+    set PP.invest false
+  ]
+end
+
+to func.pm.create_pp_new []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a new powerproducer who will invest into a new res
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Coordinates
+  let tmp.y (min [ycor] of PowerProducers)
+  let tmp.x (max [xcor] of PowerProducers with [ycor = tmp.y])
+  ifelse (tmp.x = 16) [
+    set tmp.y (tmp.y - 3)
+    set tmp.x 1
+  ][
+    set tmp.x (tmp.x + 3)
+  ]
+  
+  ;; Create new PP
+  create-PowerProducers 1 [
+    ;; Default settings
+    setxy tmp.x tmp.y
+    set color 45
+    set heading 0
+    
+    ;; General values
+    set PP.id global.PM.no_pp
+    set PP.start_year global.year    
+    set PP.delta_threshold_max random-float const.PM.delta_threshold ;maximal change in threshold [-]
+    set PP.investment_time const.PM.investment_time ;int number of periods used for investment [-]
+  
+    ;; Current values
+    set PP.alive true ;boolean if alive [-]
+    set PP.threshold global.PM.threshold_min ;float investment threshold [-]
+    set PP.income 0;float income of the pp [€]
+    set PP.net_cashflow 0 ;float netto cashflow of the pp [€]
+    set PP.specific_cashflow 0 ;float specific netto cashflow [€/MW]
+    set PP.liquidity (-1 * init.PM.c_res_0 * const.RES.new_capacity) ;float liquidity of the pp [€]
+    set PP.wallet 0; float liquidity for the wallet method of the pp [€]
+    set PP.wallet_in 0; float income for the wallet method of the pp [€]
+    set PP.wallet_out 0; float expense for the wallet method of the pp [€]
+    set PP.balance 0 ;float balance of cash and assets of the pp [€]
+    set PP.profitability 0 ;float total profitability of the pp [-]
+    set PP.expectation 0 ;float total performance expectation ratio of pp [-]
+    set PP.roi 0 ;float return on investment [-]
+    set PP.roi_target global.PM.roi_target ;float target for ROI [-]
+    set PP.marketshare 0 ;float market share [-]
+    set PP.invest true ;boolean if invest [-]
+    set PP.investment_new init.PM.c_res_0 ;investment costs for new res [€/MW]
+    ;; set PP.capacity_new const.RES.new_capacity ;int capacity for new investment [MW]
+    set PP.capacity_new (max [RES.capacity] of Renewables)
+    set PP.capacity_installed PP.capacity_new ;int installed owned capacity [MW]
+    set PP.capacity_cumulative PP.capacity_new ;int cumulative owned capacity [MW]
+    set PP.util 0 ;float utilization rate [-]
+    set PP.production 0 ;float produced amount of power [MWh]
+    set PP.production_cumulative 0 ;float cumulative produced amount of power [MWh]
+    set PP.lcoe 1e10 ;float levelized cost of electricity for pp [€/MWh]
+    set PP.weighted_price 1e10;float weighted price of electricity for pp [€/MWh]
+    set PP.list_assets []; list all active renewables of pp [-]
+    set PP.list_income_profitability [];list of income in the last n periods of the pp for the profitabilty [€]
+    set PP.list_expense_profitability [];list of expense in the last n periods of the pp for the profitabilty [€]
+    set PP.list_income_expectation [];list of income in the last n periods of the pp for the expected profitabilty [€]
+    set PP.list_expense_expectation [];list of expense in the last n periods of the pp for the expected profitabilty [€]
+    set PP.list_net_cashflow [];list of the net cashflows in the last n periods of the pp for the specific cashflow [€]
+    set PP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the pp for the specific cashflow [MW]
+  
+    ;; Tracking values
+    set PP.track.threshold []
+    set PP.track.income []
+    set PP.track.net_cashflow []
+    set PP.track.profitability []
+    set PP.track.marketshare []
+    set PP.track.invest []
+    set PP.track.liquidity []
+    set PP.track.capacity_installed []
+    set PP.track.capacity_cumulative []
+    set PP.track.capacity_new []
+    set PP.track.util []
+    set PP.track.production []
+    set PP.track.production_cumulative []
+    set PP.track.specific_cashflow []
+    set PP.track.lcoe []
+    set PP.track.weighted_price []
+    
+    ;; New RES for the PP
+    func.pm.create_res_new PP.id tmp.x tmp.y PP.capacity_new PP.threshold (PP.capacity_new * PP.investment_new)
+    
+    ;; Update list of assets
+    set PP.list_assets link-neighbors
+  ]
+  
+  ;; Update global.PM.no_pp
+  set global.PM.no_pp (global.PM.no_pp + 1)
+end
+  
+to func.pm.create_res_new [tmp.owner tmp.x tmp.y tmp.capacity tmp.threshold tmp.investment]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a new renewables power plant for PP with ID = tmp.id
+  ;; IN: float tmp.owner - ID of the corresponding PP [-]
+  ;;     float tmp.x - xcor of PP [-]
+  ;;     float tmp.y - ycor of PP [-]
+  ;;     float tmp.capacity - capacity of the new RES [MW]
+  ;;     float tmp.threshold- Investment threshold of PP at time
+  ;;                          of investment [-]
+  ;;     float tmp.investment - Investment costs of RES [€]
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  hatch-Renewables 1 [
+    ;; Default settings
+    setxy (tmp.x + 1) tmp.y
+    set color 44
+    set heading 180
+    
+    ;; General values
+    set RES.id global.PM.no_res ;identifier
+    set RES.owner tmp.owner ;id of owner
+    set RES.start_year global.year ;when entered the market [-]
+    set RES.capacity tmp.capacity ;capacity [MW]
+    set RES.threshold tmp.threshold ;threshold at time of investment
+    set RES.investment tmp.investment ;investment cost of the renewable [€]
+    set RES.investment_time (item 0 [PP.investment_time] of PowerProducers with [PP.id = tmp.owner]) ;periodes for investment [years]
+    set RES.threshold item 0 [PP.threshold] of PowerProducers with [PP.id = tmp.owner] ;investment threshodl [-]
+    set RES.lifetime const.RES.lifetime + random const.RES.lifetime_range ;lifetime [years]
+    set RES.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.RES.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set RES.age 0 ;int age of the renewable [-]
+    set RES.profitability 0 ;float profitability of the res [-]
+    set RES.expectation 0 ;float performance expectation ratio of res [-]
+    set RES.roi 0 ;float return on investment [-]
+    set RES.income 0 ;float income of the res [€]
+    set RES.lcoe 1e10 ;float levelized cost of electricity [€/MWh]
+    set RES.liquidity (-1 * tmp.investment) ;float liquidity of the res [€]
+    set RES.production 0 ;float amount of power produced [MWh]
+    set RES.production_cumulative 0 ;float cumulative amount of power produced [MWh]
+    set RES.util 0 ;float utilization of the res [-]
+    set RES.list_util [] ;list of utilization rate [-]
+    set RES.list_produced [] ;list of production [MWh]
+    set RES.list_income [] ;list of income [€]
+    set RES.list_income_profitability [] ;list of income in the last n periods of the res for the profitabilty [€]
+    set RES.list_expense_profitability [] ;list of expense in the last n periods of the res for the profitabilty [€]
+    set RES.list_income_expectation [] ;list of income in the last n periods of the res for the expected profitabilty [€]
+    set RES.list_expense_expectation [] ;list of expense in the last n periods of the res for the expected profitabilty [€]
+    
+    ;; Tracking values
+    set RES.track.age []
+    set RES.track.profitability []
+    set RES.track.income []
+    set RES.track.lcoe []
+    set RES.track.liquidity []
+    set RES.track.production []
+    set RES.track.production_cumulative []
+    set RES.track.util [] 
+    
+    ;; Create link with owner
+    create-link-with one-of PowerProducers with [PP.id = tmp.owner]
+  ]
+  
+  ;; Update the PP
+  ask PowerProducers with [PP.id = tmp.owner] [
+    set PP.liquidity (PP.liquidity - tmp.investment)
+  ]
+  
+  ;; Update global.PM.no_res and global.PM.capacity_cumulative
+  set global.PM.no_res (global.PM.no_res + 1)
+  set global.PM.added_capacity (global.PM.added_capacity + tmp.capacity)
+end
+
+to func.pm.set_threshold_min []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the minimal threshold for the power market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set global.PM.threshold_min 0
+end
+
+to-report func.pm.get_investment_new [tmp.investment_old]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the costs for new investments, changes only if
+  ;; there was an investment
+  ;; IN: float tmp.investment_old - the current costs for new
+  ;;                                investments
+  ;; OUT: float tmp.investment_new - the new costs for new
+  ;;                                 investments
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.investment_new tmp.investment_old ;; currently no change
+  report tmp.investment_new
+end
+
+to-report func.pm.get_capacity_new [tmp.capacity_old]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the capacity for new investments, changes only if
+  ;; there was an investment
+  ;; IN: float tmp.capacity_old - the current size for new
+  ;;                              investments
+  ;; OUT: float tmp.capacity_new - the new size for new
+  ;;                               investments
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.capacity_new 0
+  let tmp.capacity_max const.RES.max_capacity
+  set tmp.capacity_new round (tmp.capacity_old + const.RES.max_capacity_rate)
+  if tmp.capacity_new >= tmp.capacity_max [
+    set tmp.capacity_new tmp.capacity_max
+  ]
+  report tmp.capacity_new
+end
+
+to-report func.pm.get_delta_threshold [tmp.profitability tmp.delta_threshold_max]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the change of profitability based on the 
+  ;; profitability and the maximum delta of a pp
+  ;; IN: float tmp.profitability - ratio between income and EAC
+  ;;                               of the PP [-]
+  ;;     float tmp.delta_threshold_max - maximum change in
+  ;;                                     threshold of the PP [-]
+  ;; OUT: float tmp.delta_threshold - change in investment
+  ;;                                  of the pp threshold [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate change
+  let tmp.delta_threshold (-1 * tmp.delta_threshold_max * func.tanh (const.beta * ln (tmp.profitability + 1e-10)))
+  
+  report tmp.delta_threshold
+end
+
+to-report func.pm.get_res_capacity_factor []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns an array with all capacity factors of renewables
+  ;; for one year from infile.PM.ts_demand_daily
+  ;; IN: -
+  ;; OUT: list tmp.cap_factor - Maximum capacity factor for
+  ;;                            renewables [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  file-open infile.PM.ts_demand_daily
+  let tmp.file csv:from-file infile.PM.ts_demand_daily
+  file-close
+  let tmp.cap_factor item 2 tmp.file
+
+  report tmp.cap_factor
+end
+
+to-report func.pm.get_elc_demand_other []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns an array with demand for electricity by others for
+  ;; one year from infile.PM.ts_demand_daily
+  ;; IN: -
+  ;; OUT: list tmp.demand_elc_other - Electricity demand by
+  ;;                                  others [MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.demand_year func.pm.get_elc_demand_year
+  
+  file-open infile.PM.ts_demand_daily
+  let tmp.file csv:from-file infile.PM.ts_demand_daily
+  file-close
+  let tmp.demand_day item 1 tmp.file
+  let tmp.demand_elc_other func.scalar_mult tmp.demand_year tmp.demand_day
+  
+  report tmp.demand_elc_other
+end
+
+to-report func.pm.get_elc_demand_year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns an array with demand for electricity by others for
+  ;; one year from infile.PM.ts_demand_yearly
+  ;; IN: -
+  ;; OUT: list tmp.demand_year - electricity demand by others
+  ;;                             for the current year [MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  file-open infile.PM.ts_demand_yearly
+  let tmp.file csv:from-file infile.PM.ts_demand_yearly
+  file-close
+  let tmp.demand_year item 1 item global.year tmp.file
+  
+  report tmp.demand_year
+end
+
+to-report func.pm.get_elc_payout [tmp.price]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the payout power producer get, including subsidies
+  ;; IN: float tmp.price - current electricity price for [€/MWh]
+  ;; OUT: float tmp.payout - payout for power producers [€/MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.payout 0
+  (ifelse
+    scenario.power_subsidy [
+      set tmp.payout (tmp.price * (1 + GOV.power_subsidy))
+    ]
+    scenario.power_guarant [
+      ifelse tmp.price < GOV.power_guarant [
+        set tmp.payout GOV.power_guarant
+      ][
+        set tmp.payout tmp.price
+      ]
+    ][
+      set tmp.payout tmp.price
+    ]
+  )
+  
+  report tmp.payout
+end 
+
+to-report func.pm.get_gas_price []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the current price for gas (including a co2_tax if
+  ;; necessary)
+  ;; IN: -
+  ;; OUT: float tmp.c_gas - price of gas [€/MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.c_gas init.pm.c_gas_0
+  ifelse scenario.co2_tax [
+    set tmp.c_gas (tmp.c_gas + func.pm.get_co2_tax)
+  ][
+    set tmp.c_gas tmp.c_gas
+  ]
+  
+  report tmp.c_gas
+end
+
+to-report func.pm.get_co2_tax []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the CO2-tax [€/MWh] from infile.PM.ts_co2_yearly
+  ;; IN: -
+  ;; OUT: float tmp.c_co2 - CO2-tax [€/MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  file-open infile.PM.ts_co2_yearly
+  let tmp.file csv:from-file infile.PM.ts_co2_yearly
+  file-close
+  let tmp.c_co2 item 1 (item global.year tmp.file)
+  
+  ;; From [€/t_co2] to [€/MWh_gas]
+  set tmp.c_co2 tmp.c_co2 * const.gas_co2
+
+  report tmp.c_co2
+end
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------------- Hydrogen market -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to func.hm.daily []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 3.2 Hydrogen market daily actions
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Determines the daily production of hydrogen, the daily
+  ;; electricity price and save these values in the market,
+  ;; agents and assets.
+  ;; 3.2.1 Get maximal renewable production
+  ;; 3.2.2 Get electricity demand other
+  ;; 3.2.3 Calculate ELC utilisation, ELC production, ELC price
+  ;; 3.2.4 Apply governmental actions to h2 price (optional)
+  ;; 3.2.5 Save data
+  ;; 3.2.5.1 Save data for market
+  ;; 3.2.5.2 Save data for electrolyzers
+  ;; 3.2.5.3 Save data for agents
+  ;; 3.2.6 Write data (optional)
+  ;; 3.2.7 Plot data (optional)
+  ;; 3.2.8 Track data (optional)
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 3.2.1 Get maximal renewable production
+  let tmp.production_res_max func.scalar_mult ((sum [RES.capacity] of Renewables) * 24) func.pm.get_res_capacity_factor
+  
+  ;; 3.2.2 Get electricity demand other
+  let tmp.demand_elc_other func.pm.get_elc_demand_other
+    
+  ;; 3.2.3 Calculate ELC utilisation
+  let tmp.util []
+  let tmp.production []
+  let tmp.income []
+  let tmp.expense []
+  ifelse length tmp.production_res_max = length tmp.demand_elc_other [
+    (foreach tmp.production_res_max tmp.demand_elc_other [
+      [x y] ->
+      (ifelse
+        ;; Case 1: Production renewables < Electricity demand others
+        x < y [
+          set tmp.util lput 0 tmp.util
+        ]
+        ;; Case 2: Electricity demand other < Production renewables < Electricity demand others + Capacity Electrolyzers
+        x >= y and x < (y + ((sum [ELC.capacity] of Electrolyzers) * 24)) [
+          set tmp.util lput ((x - y) / ((sum [ELC.capacity] of Electrolyzers) * 24)) tmp.util
+        ]
+        ;; Case 3: Production renewables > Electricity demand other + Capacity Electrolyzers
+        x >= (y + ((sum [ELC.capacity] of Electrolyzers) * 24)) [
+          ifelse (sum [ELC.capacity] of Electrolyzers) > 0 [
+            set tmp.util lput 1 tmp.util
+          ][
+            set tmp.util lput 0 tmp.util
+          ]
+        ]
+      )
+      set tmp.income lput global.HM.price_h2 tmp.income
+     ]
+    )
+    set tmp.expense global.PM.list_price
+    set tmp.production func.scalar_mult ((sum [ELC.capacity] of Electrolyzers) * 24 * const.eta_electrolyzer) tmp.util
+  ][
+    print "Error 332: Mismatched length in func.hm.daily."
+  ] 
+     
+  ;; 3.2.4 Apply governmental actions to h2 price (optional)
+  let tmp.payout tmp.income
+  if scenario.h2_subsidy or scenario.h2_guarant [
+    set tmp.payout []
+    (foreach tmp.income [
+      [x] ->
+      set tmp.payout lput (func.hm.get_h2_payout x) tmp.payout
+      ]
+    )
+  ]
+  
+  ;; 3.2.5 Save data
+  ;; 3.2.5.1 Save data for market
+  set global.HM.payout_h2 (func.hm.get_h2_payout global.HM.price_h2)
+  set global.HM.list_util tmp.util
+  set global.HM.list_production tmp.production
+  set global.HM.list_income tmp.payout 
+  ifelse sum (global.HM.list_production) > 0 [
+    set global.HM.list_expense tmp.expense
+    set global.HM.lcoh ((sum [ELC.investment * ELC.crf] of Electrolyzers with [ELC.age <= const.ELC.lifetime]) + (sum func.vector_mult global.HM.list_production global.HM.list_expense)) / (sum global.HM.list_production) 
+  ][
+    set global.HM.lcoh 1e10
+    set global.HM.list_expense n-values length tmp.expense [0]
+  ]
+  
+  ;; 3.2.5.2 Save data for electrolyzers
+  ask Electrolyzers [
+    set ELC.income sum (func.vector_mult (func.scalar_mult (ELC.capacity * 24 * const.eta_electrolyzer) tmp.util) tmp.payout)
+    set ELC.expense sum (func.vector_mult (func.scalar_mult (ELC.capacity * 24) tmp.util) tmp.expense)
+    set ELC.liquidity (ELC.liquidity + ELC.income - ELC.expense)
+    set ELC.production sum (func.scalar_mult (ELC.capacity * 24 * const.eta_electrolyzer) tmp.util)
+    set ELC.production_cumulative (ELC.production_cumulative + ELC.production)
+    set ELC.util mean tmp.util
+    set ELC.list_util tmp.util
+    set ELC.list_produced (func.scalar_mult (ELC.capacity * 24 * const.eta_electrolyzer) tmp.util)
+    set ELC.list_income (func.vector_mult (func.scalar_mult (ELC.capacity * 24 * const.eta_electrolyzer) tmp.util) tmp.payout)
+    set ELC.list_expense (func.vector_mult (func.scalar_mult (ELC.capacity * 24 * const.eta_electrolyzer) tmp.util) tmp.expense)
+    ifelse ELC.production > 0 [
+      ifelse ELC.age > const.ELC.lifetime [
+        set ELC.lcoh (ELC.expense / ELC.production)
+      ][
+        set ELC.lcoh ((ELC.investment * ELC.crf) + ELC.expense) / ELC.production
+      ]
+    ][
+      set ELC.lcoh 1e10
+    ]
+  ]
+  
+  ;; 3.2.5.3 Save data for agents
+  ask HydrogenProducers with [HP.alive] [
+    let tmp.owner HP.id
+    set HP.income sum [ELC.income] of Electrolyzers with [ELC.owner = tmp.owner]
+    set HP.expense sum [ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner]
+    set HP.net_cashflow (HP.income - HP.expense)
+    set HP.liquidity (HP.liquidity + HP.net_cashflow)
+    ifelse (sum [ELC.production] of Electrolyzers) > 0 [
+      set HP.marketshare ((sum [ELC.production] of Electrolyzers with [ELC.owner = tmp.owner]) / (sum [ELC.production] of Electrolyzers))
+    ][
+      set HP.marketshare 0
+    ]
+    ifelse (sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner]) > 0 [
+      set HP.util ((sum [ELC.util * ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner]) / (sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner]))
+    ][
+      set HP.util 0
+    ]
+    set HP.production (sum [ELC.production] of Electrolyzers with [ELC.owner = tmp.owner])
+    set HP.production_cumulative (HP.production_cumulative + HP.production)
+    set HP.specific_cashflow (HP.net_cashflow / (sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner]))
+    ifelse HP.production > 0 [
+      set HP.lcoh (((sum [ELC.investment * ELC.crf] of Electrolyzers with [ELC.owner = tmp.owner and ELC.age <= const.ELC.lifetime]) + HP.expense) / HP.production) 
+    ][
+      set HP.lcoh 1e10
+    ]
+  ]
+  
+  ;; 3.2.6 Write data (optional)
+  if settings.write [
+    write.HM.day
+  ]
+  
+  ;; 3.2.7 Plot data (optional)
+  if settings.plot [
+    plot.HM.day
+  ]
+  
+  ;; 3.2.8 Track data (optional)
+  if settings.track [
+    set track.HM.list_util lput global.HM.list_util track.HM.list_util
+    set track.HM.list_production lput global.HM.list_production track.HM.list_production
+    set track.HM.list_income lput global.HM.list_income track.HM.list_income
+    set track.HM.list_expense lput global.HM.list_expense track.HM.list_expense
+  ]
+end
+
+to func.hm.yearly []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.2 Hydrogen Market yearly actions
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Update the investment threshold of all HP and calculate 
+  ;; the specific net cashflow. Make a list of all HP and a list
+  ;; of all EP based on their respective marketshare. Choose a HP
+  ;; randomly from the list. Calculate the maximal price for an
+  ;; electrolyzer that the HP is willing to pay, by using their
+  ;; investment threshold and a reverse npv. Pick a random EP
+  ;; from the sellers list. Check if they have enough production
+  ;; capacity left and if they can sell the electrolyzer to a
+  ;; lower or equal price. If yes, the HP makes the investment
+  ;; and the EP needs to be update. Otherwise remove the current
+  ;; EP from the list and pick the next one. If no EP can offer
+  ;; an electrolyzer, no investment is made by the HP. If all HP
+  ;; invest, create new HP, but only if they are able to find an
+  ;; electrolyzer. Calculate and update market values. Update
+  ;; electrolyzer and remove if to old. If a HP has no
+  ;; electrolyzer left remove the HP. If no HP left, check if a
+  ;; new HP should be forced and do so (optional).
+  ;; 4.2.1 Update profitability, investment threshold and
+  ;;       specific cashflow
+  ;; 4.2.2 Create demand list
+  ;; 4.2.3 One-on-one negotiations
+  ;; 4.2.3.1 Go thru demand list
+  ;; 4.2.3.1.1 Pick HP with highest willingness to pay
+  ;; 4.2.3.1.2 Find EP with lowest production costs
+  ;; 4.2.3.1.2.1 Go thru supply list
+  ;; 4.2.3.1.2.1.1 Check if enough capacity left
+  ;; 4.2.3.1.2.1.2 Get production costs for demand
+  ;; 4.2.3.1.2.1.3 Select EP if they have lowest production costs
+  ;; 4.2.3.1.3 Sale going to happen
+  ;; 4.2.3.1.3.1 Get barging power
+  ;; 4.2.3.1.3.2 Calculate price elc
+  ;; 4.2.3.1.3.3 Create new ELC for HP
+  ;; 4.2.3.1.3.4 Update HP
+  ;; 4.2.3.1.3.5 Update EP
+  ;; 4.2.3.1.3.6 Update MAN from EP
+  ;; 4.2.3.1.4 Remove HP from demand list
+  ;; 4.2.4 Save data
+  ;; 4.2.4.1 Save data for Manufacturings
+  ;; 4.2.4.2 Save data for agents
+  ;; 4.2.5 Write data (optional)
+  ;; 4.2.6 Plot data (optional)
+  ;; 4.2.7 Track data (optional)
+  ;; 4.2.8 New HP if all other HP have invested
+  ;; 4.2.8.1 Calculate maximal electrolyzer price
+  ;; 4.2.8.2 Sale going to happen
+  ;; 4.2.8.2.1 Create new HP
+  ;; 4.2.8.2.2 Create new ELC
+  ;; 4.2.8.2.3 Update HP
+  ;; 4.2.8.2.4 Update EP
+  ;; 4.2.8.2.5 Update MAN from EP
+  ;; 4.2.9 Update ELC age and remove ELC if to old and remove
+  ;;       HP if they dont have a ELC
+  ;; 4.2.10 New HP if no HP left and time w/o agent > time lag
+  ;;        (optional)
+  ;; 4.2.10.1 Calculate maximal electrolyzer price
+  ;; 4.2.10.2 Sale going to happen
+  ;; 4.2.10.2.1 Create new HP
+  ;; 4.2.10.2.2 Create new ELC
+  ;; 4.2.10.2.3 Update HP
+  ;; 4.2.10.2.4 Update EP
+  ;; 4.2.10.2.5 Update MAN from EP
+  ;; 4.2.11 Update or reset data
+  ;; 4.2.11.1 Update or reset data for market
+  ;; 4.2.11.2 Update or reset data for electrolyzers
+  ;; 4.2.11.3 Update or reset data for agents
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.2.1 Update profitability, investment threshold and specific cashflow, return on investment
+  ask Electrolyzers [
+    ;; Update profitability
+    let tmp.income ELC.income
+    let tmp.expense (ELC.crf * ELC.investment + ELC.expense)
+    let tmp.expense_expected (ELC.crf * ELC.investment * (1 + ELC.threshold) + ELC.expense)
+    if ELC.age > const.ELC.lifetime [
+      set tmp.expense ELC.expense
+      set tmp.expense_expected ELC.expense
+    ]
+    
+    ifelse tmp.income = 0 [
+      set ELC.profitability 0
+      set ELC.expectation 0
+    ][
+      ifelse tmp.expense = 0 [
+        set ELC.profitability 1e10
+        set ELC.expectation 1e10
+      ][
+        set ELC.profitability (tmp.income / tmp.expense)
+        set ELC.expectation (tmp.income / tmp.expense_expected)
+      ]
+    ]
+    
+    ;; Update return on investment
+    set ELC.roi ((ELC.income - ELC.expense) / ELC.investment)
+  ]
+  
+  ask HydrogenProducers with [HP.alive] [
+    let tmp.owner HP.id
+    ;; Update profitability and specific cashflow, return on investment
+    let tmp.income (sum [ELC.income] of Electrolyzers with [ELC.owner = tmp.owner])
+    let tmp.expense (sum [ELC.crf * ELC.investment + ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner and ELC.age <= const.ELC.lifetime] + sum [ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner and ELC.age > const.ELC.lifetime])
+    let tmp.expense_expected (sum [ELC.crf * ELC.investment * (1 + ELC.threshold) + ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner and ELC.age <= const.ELC.lifetime] + sum [ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner and ELC.age > const.ELC.lifetime])
+    
+    ifelse tmp.income = 0 [
+      set HP.profitability 0
+      set HP.expectation 0
+    ][
+      ifelse tmp.expense = 0 [
+        set HP.profitability 1e10
+        set HP.expectation 1e10
+      ][
+        set HP.profitability (tmp.income / tmp.expense)
+        set HP.expectation (tmp.income / tmp.expense_expected)
+      ]
+    ]
+    
+    ;; Update return on investment
+    set HP.roi ((sum [ELC.income - ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner]) / (sum [ELC.investment] of Electrolyzers with [ELC.owner = tmp.owner]))
+    
+    let tmp.delta_threshold func.hm.get_delta_threshold (HP.roi / HP.roi_target) HP.delta_threshold_max
+    set HP.threshold HP.threshold + tmp.delta_threshold
+    ifelse global.HM.cumulative_capacity < (HP.gamma * const.ELC.target_capacity) [
+      let tmp.lower_limit (init.HM.threshold_0 * (1 - (global.HM.cumulative_capacity / (HP.gamma * const.ELC.target_capacity))))
+      if HP.threshold < tmp.lower_limit [
+        set HP.threshold tmp.lower_limit
+      ] 
+    ][
+      if HP.threshold < 0 [
+        set HP.threshold 0
+      ]
+    ]
+    
+    set HP.specific_cashflow ((sum [ELC.income - ELC.expense] of Electrolyzers with [ELC.owner = tmp.owner]) / (sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner]))
+
+    ;; Update wallet
+    set HP.wallet_in tmp.income
+    set HP.wallet_out tmp.expense
+    set HP.wallet (HP.wallet_in - HP.wallet_out)
+  ]
+  
+  ;; 4.2.2 Create demand list [HP.id [-] HP.willingness to pay [€/MW] HP.elc_size [MW]]
+  let tmp.list_buyers func.hm.get_list_buyers
+  
+  ;; 4.2.3 One-on-one negotiations  
+  ;; 4.2.3.1 Go thru demand list
+  while [not empty? tmp.list_buyers] [
+    ;; 4.2.3.1.1 Pick HP with highest willingness to pays [€/MW]
+    let tmp.hp item 0 tmp.list_buyers
+    let tmp.elc_capacity_new item 2 tmp.hp
+    let tmp.elc_price_max item 1 tmp.hp
+    let tmp.hp_id item 0 tmp.hp
+    let tmp.elc_price_min 1e10
+    let tmp.ep_id 0
+    
+    ;; 4.2.3.1.2 Get supply list [EP.id [-] EP.costs [€/MW] EP.elc_size [MW]]
+    let tmp.list_sellers func.em.get_list_sellers tmp.elc_capacity_new
+    
+    ;; 4.2.3.1.3 Get max costs and max delta elc capacity
+    if not empty? tmp.list_sellers [
+      let tmp.costs_max 0
+      let tmp.delta_size_max 0
+      foreach tmp.list_sellers [i ->
+        if item 1 i > tmp.costs_max [
+          set tmp.costs_max item 1 i
+        ]
+        if (tmp.elc_capacity_new - (item 2 i)) > tmp.delta_size_max [
+          set tmp.delta_size_max (tmp.elc_capacity_new - (item 2 i))
+        ]
+      ]
+      if tmp.costs_max = 0 [
+        set tmp.costs_max 1e10
+      ]
+      if tmp.delta_size_max = 0 [
+        set tmp.delta_size_max 1e10
+      ]
+      
+      ;; 4.2.3.1.3 Find best EP based on weights of HP
+      let tmp.weight_price item 0 [HP.weight_price] of HydrogenProducers with [HP.id = tmp.hp_id]
+      let tmp.weight_size item 0 [HP.weight_size] of HydrogenProducers with [HP.id = tmp.hp_id]
+      let tmp.best_find []
+      let tmp.mcda 1e10
+      let tmp.mcda_i 1e10
+      foreach tmp.list_sellers [i ->
+        set tmp.mcda_i tmp.weight_price * (item 1 i) / tmp.costs_max + tmp.weight_size * (tmp.elc_capacity_new - (item 2 i)) / tmp.delta_size_max
+        if tmp.mcda_i < tmp.mcda [
+          set tmp.mcda tmp.mcda_i
+          set tmp.best_find i
+        ]
+      ]
+    
+      ;; 4.2.3.1.4 Sale goint to happen, price are in [€/MW]
+      set tmp.ep_id item 0 tmp.best_find
+      set tmp.elc_price_min item 1 tmp.best_find
+      set tmp.elc_capacity_new item 2 tmp.best_find
+    ]
+        
+    ;; 4.2.3.1.4 Sale going to happen, prices are in [€/MW]
+    if tmp.elc_price_min <= tmp.elc_price_max [
+      ;; 4.2.3.1.4.1 Get barging power
+      let tmp.beta func.em.get_barging_factor tmp.hp_id tmp.ep_id
+          
+      ;; 4.2.3.1.4.2 Calculate price elc [€/MW]
+      let tmp.elc_price (tmp.elc_price_min + tmp.beta * (tmp.elc_price_max - tmp.elc_price_min))
+          
+      ;; 4.2.3.1.4.3 Create new ELC if price max > price min
+      ask HydrogenProducers with [HP.id = tmp.hp_id] [
+        func.hm.create_elc_new HP.id xcor ycor tmp.elc_capacity_new HP.threshold (tmp.elc_price * tmp.elc_capacity_new)
+            
+        ;; 4.2.3.1.4.4 Update HP if price max > price min
+        set HP.invest true
+        set HP.list_assets link-neighbors
+        set HP.liquidity (HP.liquidity - tmp.elc_price * tmp.elc_capacity_new)
+        set HP.capacity_added tmp.elc_capacity_new
+            
+        set global.HM.no_investment (global.HM.no_investment + 1)
+        set global.HM.added_capacity (global.HM.added_capacity + tmp.elc_capacity_new)
+      ]
+          
+      ;; Payout for EP [€/MW]
+      let tmp.elc_payout tmp.elc_price
+          
+      ;; 4.2.3.1.4.5 Update EP if price max > price min
+      ask ElectrolyzerProducers with [EP.id = tmp.ep_id] [  
+        ;; Apply governmental actions to h2 price (optional)     
+        if scenario.elc_subsidy or scenario.elc_guarant [
+          set tmp.elc_payout func.em.get_elc_payout tmp.elc_price
+        ]
+             
+        set EP.income (EP.income + tmp.elc_payout * tmp.elc_capacity_new)
+        set EP.expense (EP.expense + tmp.elc_price_min * tmp.elc_capacity_new)
+        set EP.capacity_left (EP.capacity_left - tmp.elc_capacity_new)
+        set EP.production (EP.production + tmp.elc_capacity_new)
+        set EP.production_cumulative (EP.production_cumulative + tmp.elc_capacity_new)
+        set EP.list_income lput (tmp.elc_payout * tmp.elc_capacity_new) EP.list_income
+        set EP.list_expense lput (tmp.elc_price_min * tmp.elc_capacity_new) EP.list_expense
+      ]
+          
+      ;; 4.2.3.1.4.6 Update MAN from EP
+      func.em.set_man_production tmp.ep_id tmp.elc_capacity_new tmp.elc_payout  
+        
+      ;; Write data (optional)
+      if settings.write [
+        write.SALE.year tmp.hp_id tmp.ep_id tmp.elc_price_max tmp.elc_price_min tmp.elc_price tmp.elc_payout tmp.elc_capacity_new
+      ]
+    ]
+      
+    ;; 4.2.3.1.5 Remove HP from demand list
+    set tmp.list_buyers remove tmp.hp tmp.list_buyers
+  ]
+      
+  ;; 4.2.4 Save data
+  ;; 4.2.4.1 Save data for Manufacturing
+  ask Manufacturings [
+    set MAN.income (sum MAN.list_income)
+    set MAN.expense (sum MAN.list_expense)
+    set MAN.liquidity (MAN.liquidity + MAN.income - MAN.expense)
+    set MAN.util (MAN.production / MAN.capacity)
+    set MAN.production_cumulative (MAN.production_cumulative + MAN.production)
+  ]
+  
+  ;; 4.2.4.2 Save data for agents
+  ask ElectrolyzerProducers with [EP.alive] [
+    set EP.net_cashflow (EP.income - EP.expense)
+    if (sum [EP.production] of ElectrolyzerProducers with [EP.alive]) > 0 [
+      set EP.marketshare (EP.production / (sum [EP.production] of ElectrolyzerProducers with [EP.alive]))
+    ]
+    set EP.util (EP.production / EP.capacity_installed)
+  ]
+  
+  ;; 4.2.5 Write data (optional)
+  if settings.write [
+    write.HM.year
+    write.HP.year
+    write.ELC.year
+  ]
+  
+  ;; 4.2.6 Plot data (optional)
+  if settings.plot [
+    plot.HM.year
+  ]
+  
+  ;; 4.2.7 Track data (optional)
+  if settings.track [
+    set track.HM.no_hp lput global.HM.no_hp track.HM.no_hp
+    set track.HM.no_elc lput global.HM.no_elc track.HM.no_elc
+    set track.HM.no_investment lput global.HM.no_investment track.HM.no_investment
+    set track.HM.installed_capacity lput global.HM.installed_capacity track.HM.installed_capacity
+    set track.HM.cumulative_capacity lput global.HM.cumulative_capacity track.HM.cumulative_capacity
+    set track.HM.added_capacity lput global.HM.added_capacity track.HM.added_capacity
+    set track.HM.threshold_min lput global.HM.threshold_min track.HM.threshold_min
+    set track.HM.lcoh lput global.HM.lcoh track.HM.lcoh
+    set track.HM.price_h2 lput global.HM.price_h2 track.HM.price_h2
+    set track.HM.payout_h2 lput global.HM.payout_h2 track.HM.payout_h2
+    set track.HM.time_wo_agent lput global.HM.time_wo_agent track.HM.time_wo_agent
+    
+    ask HydrogenProducers [
+      set HP.track.threshold lput HP.threshold HP.track.threshold
+      set HP.track.income lput HP.income HP.track.income
+      set HP.track.expense lput HP.expense HP.track.expense
+      set HP.track.net_cashflow lput HP.net_cashflow HP.track.net_cashflow
+      set HP.track.profitability lput HP.profitability HP.track.profitability
+      set HP.track.marketshare lput HP.marketshare HP.track.marketshare
+      set HP.track.invest lput HP.invest HP.track.invest
+      set HP.track.liquidity lput HP.liquidity HP.track.liquidity
+      set HP.track.capacity_installed lput HP.capacity_installed HP.track.capacity_installed
+      set HP.track.capacity_cumulative lput HP.capacity_cumulative HP.track.capacity_cumulative
+      set HP.track.capacity_new lput HP.capacity_new HP.track.capacity_new
+      set HP.track.util lput HP.util HP.track.util
+      set HP.track.production lput HP.production HP.track.production
+      set HP.track.production_cumulative lput HP.production_cumulative HP.track.production_cumulative
+      set HP.track.specific_cashflow lput HP.specific_cashflow HP.track.specific_cashflow
+      set HP.track.lcoh lput HP.lcoh HP.track.lcoh
+    ]
+    
+    ask Electrolyzers [
+      set ELC.track.age lput ELC.age ELC.track.age
+      set ELC.track.profitability lput ELC.profitability ELC.track.profitability
+      set ELC.track.income lput ELC.income ELC.track.income
+      set ELC.track.expense lput ELC.expense ELC.track.expense
+      set ELC.track.lcoh lput ELC.lcoh ELC.track.lcoh
+      set ELC.track.liquidity lput ELC.liquidity ELC.track.liquidity
+      set ELC.track.production lput ELC.production ELC.track.production
+      set ELC.track.production_cumulative lput ELC.production_cumulative ELC.track.production_cumulative
+      set ELC.track.util lput ELC.util ELC.track.util
+    ]
+  ]
+  
+  ;; 4.2.8 New HP if all other HP have invested
+  if global.HM.no_investment = count HydrogenProducers with [HP.alive] and any? HydrogenProducers with [HP.alive] [
+    ;; 4.2.8.1 Calculate maximal electrolyzer price for possible new buyer
+    let tmp.specific_cashflow max [HP.specific_cashflow] of HydrogenProducers with [HP.alive]
+    ;; let tmp.elc_capacity_new const.ELC.new_capacity
+    let tmp.elc_capacity_new (max [ELC.capacity] of Electrolyzers)
+    let tmp.delta_threshold_max random-float const.HM.delta_threshold
+    let tmp.threshold global.HM.threshold_min
+    let tmp.elc_price_max (tmp.specific_cashflow * (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime))) / ((1 + tmp.threshold) * const.discount_rate) ; [€/MW]
+
+    ;; Get production costs for demand
+    let tmp.ep_id 0
+    let tmp.elc_price_min 1e10
+      
+    ;; Get supply list
+    let tmp.list_sellers func.em.get_list_sellers tmp.elc_capacity_new
+    
+    ;; Get max costs and max delta elc
+    if not empty? tmp.list_sellers [
+      let tmp.costs_max 0
+      let tmp.delta_cap_max 0
+      foreach tmp.list_sellers [i ->
+        if item 1 i > tmp.costs_max [
+          set tmp.costs_max item 1 i
+        ]
+        if (tmp.elc_capacity_new - (item 2 i)) > tmp.delta_cap_max [
+          set tmp.delta_cap_max (tmp.elc_capacity_new - (item 2 i))
+        ]
+      ]
+      if tmp.costs_max = 0 [
+        set tmp.costs_max 1e10
+      ]
+      if tmp.delta_cap_max = 0 [
+        set tmp.delta_cap_max 1e10
+      ]
+      
+      ;; Find best EP based on weights of HP
+      let tmp.weight_price 0.5 ;; maybe needs adjusment
+      let tmp.weight_size (1 - tmp.weight_price)
+      let tmp.best_find []
+      let tmp.mcda 1e10
+      let tmp.mcda_i 1e10
+      foreach tmp.list_sellers [i ->
+        set tmp.mcda_i (tmp.weight_price * (item 1 i) / tmp.costs_max + tmp.weight_size * (tmp.elc_capacity_new - (item 2 i)) / tmp.delta_cap_max)
+        if tmp.mcda_i < tmp.mcda [
+          set tmp.mcda tmp.mcda_i
+          set tmp.best_find i
+        ]
+      ]
+      
+      ;; 4.2.8.2 Sale going to happen. Prices are in [€/MW]
+      set tmp.ep_id item 0 tmp.best_find
+      set tmp.elc_price_min item 1 tmp.best_find
+      set tmp.elc_capacity_new item 2 tmp.best_find
+    ]
+      
+    if tmp.elc_price_min <= tmp.elc_price_max [
+      let tmp.elc_price tmp.elc_price_max  
+      
+      ;; Get beta - barging power 
+      let tmp.beta func.em.get_barging_factor 1e10 tmp.ep_id
+      ;; Calculate price elc [€/MW]
+      set tmp.elc_price (tmp.elc_price_min + tmp.beta * (tmp.elc_price_max - tmp.elc_price_min))
+             
+      ;; 4.2.8.2.1 Create the new HP
+      func.hm.create_hp_new tmp.threshold tmp.delta_threshold_max tmp.elc_capacity_new (tmp.elc_capacity_new * tmp.elc_price)
+        
+      ask HydrogenProducers with [HP.id = (global.HM.no_hp - 1)] [
+          ;; 4.2.8.2.2 Create new ELC if price max > price min
+          func.hm.create_elc_new HP.id xcor ycor tmp.elc_capacity_new HP.threshold (tmp.elc_capacity_new * tmp.elc_price)
+            
+          ;; 4.2.8.2.3 Update HP if price max > price min
+          set HP.invest true
+          set HP.list_assets link-neighbors
+          set HP.w2p tmp.elc_price_max
+        
+          set global.HM.no_investment (global.HM.no_investment + 1)
+          set global.HM.added_capacity (global.HM.added_capacity + HP.capacity_new)
+      ]
+        
+      ;; Payout for EP
+      let tmp.elc_payout tmp.elc_price
+          
+      ;; 4.2.8.2.4 Update EP
+      ask ElectrolyzerProducers with [EP.id = tmp.ep_id] [  
+        ;; Apply governmental actions to h2 price (optional)     
+        if scenario.elc_subsidy or scenario.elc_guarant [
+          set tmp.elc_payout func.em.get_elc_payout tmp.elc_price
+        ]
+             
+        set EP.income (EP.income + tmp.elc_payout * tmp.elc_capacity_new)
+        set EP.expense (EP.expense + tmp.elc_price_min * tmp.elc_capacity_new)
+        set EP.capacity_left (EP.capacity_left - tmp.elc_capacity_new)
+        set EP.production (EP.production + tmp.elc_capacity_new)
+        set EP.production_cumulative (EP.production_cumulative + tmp.elc_capacity_new)
+        set EP.list_income lput (tmp.elc_payout * tmp.elc_capacity_new) EP.list_income
+        set EP.list_expense lput (tmp.elc_price_min * tmp.elc_capacity_new) EP.list_expense
+      ]
+          
+      ;; 4.2.8.2.5 Update MAN from EP
+      func.em.set_man_production tmp.ep_id tmp.elc_capacity_new tmp.elc_payout 
+      
+      ;; Write data (optional)
+      if settings.write [
+        write.SALE.year (global.HM.no_hp - 1) tmp.ep_id tmp.elc_price_max tmp.elc_price_min tmp.elc_price tmp.elc_payout tmp.elc_capacity_new
+      ]
+    ]
+  ]
+    
+  ;; 4.2.9 Update ELC age and remove ELC if to old and remove HP if they dont have a ELC
+  ask Electrolyzers [
+    set ELC.age (ELC.age + 1)
+    if ELC.age > ELC.lifetime [
+      die
+    ]
+  ]
+  
+  let tmp.specific_cashflow 0
+  ask HydrogenProducers with [HP.alive] [
+    set HP.list_assets link-neighbors
+    if not any? HP.list_assets [
+      set HP.alive false
+    ]
+    
+    ;; Save specific cashflow for no HP left
+    if HP.specific_cashflow > tmp.specific_cashflow [
+      set tmp.specific_cashflow HP.specific_cashflow
+    ]
+  ]
+  
+  ;; 4.2.10 New HP if no HP left and time w/o agent > time lag (optional)
+  if is-number? scenario.time_lag and not any? HydrogenProducers with [HP.alive] [
+    set global.HM.time_wo_agent (global.HM.time_wo_agent + 1)
+    if global.HM.time_wo_agent >= scenario.time_lag [
+      
+      ;; 4.2.10.1 Calculate maximal electrolyzer price
+      let tmp.elc_capacity_new const.ELC.new_capacity
+      let tmp.delta_threshold_max random-float const.HM.delta_threshold
+      let tmp.threshold global.HM.threshold_min + tmp.delta_threshold_max
+      let tmp.elc_price_max (tmp.specific_cashflow * (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime))) / ((1 + tmp.threshold) * const.discount_rate)
+
+      ;; Get production costs for demand
+      let tmp.ep_id 0
+      let tmp.elc_price_min 1e10
+      
+      ;; Get supply list
+      let tmp.list_sellers func.em.get_list_sellers tmp.elc_capacity_new
+      
+      if not empty? tmp.list_sellers [
+        ;; Find max costs and delta_cap
+        let tmp.costs_max 0
+        let tmp.delta_cap_max 0
+        foreach tmp.list_sellers [i ->
+          if item 1 i > tmp.costs_max [
+            set tmp.costs_max item 1 i
+          ]
+          if item 2 i > tmp.delta_cap_max [
+            set tmp.delta_cap_max item 2 i
+          ]
+        ]
+        if tmp.costs_max = 0 [
+          set tmp.costs_max 1e10
+        ]
+        if tmp.delta_cap_max = 0 [
+          set tmp.delta_cap_max 1e10
+        ]
+        
+        ;; Find best EP based on weights of HP
+        let tmp.weight_price 0.5 ;; maybe needs adjusment
+        let tmp.weight_size (1 - tmp.weight_price)
+        let tmp.best_find []
+        let tmp.mcda 1e10
+        let tmp.mcda_i 1e10
+        foreach tmp.list_sellers [i ->
+          set tmp.mcda_i (tmp.weight_price * (item 1 i) / tmp.costs_max + tmp.weight_size * (tmp.elc_capacity_new - (item 2 i)) / tmp.delta_cap_max)
+          if tmp.mcda_i < tmp.mcda [
+            set tmp.mcda tmp.mcda_i
+            set tmp.best_find i
+          ]
+        ]
+        
+        ;; 4.2.10.2 Sale going to happen
+        set tmp.ep_id item 0 tmp.best_find
+        set tmp.elc_price_min item 1 tmp.best_find
+        set tmp.elc_capacity_new item 2 tmp.best_find
+      ]
+        
+      if tmp.elc_price_min <= tmp.elc_price_max [
+        let tmp.elc_price tmp.elc_price_max
+          
+        ;; Get barging power
+        let tmp.beta func.em.get_barging_factor 1e10 tmp.ep_id
+        
+        ;; Calculate price elc
+        set tmp.elc_price (tmp.elc_price_min + tmp.beta * (tmp.elc_price_max - tmp.elc_price_min))
+
+        ;; 4.2.10.2.1 Create the new HP
+        func.hm.create_hp_new tmp.threshold tmp.delta_threshold_max tmp.elc_capacity_new (tmp.elc_capacity_new * tmp.elc_price)
+        
+        ask HydrogenProducers with [HP.id = (global.HM.no_hp - 1)] [
+          ;; 4.2.10.2.2 Create new ELC if price max > price min
+          func.hm.create_elc_new HP.id xcor ycor tmp.elc_capacity_new HP.threshold (tmp.elc_capacity_new * tmp.elc_price)
+            
+          ;; 4.2.10.2.3 Update HP if price max > price min
+          set HP.invest true
+          set HP.list_assets link-neighbors
+          set HP.w2p tmp.elc_price_max
+            
+          set global.HM.no_investment (global.HM.no_investment + 1)
+          set global.HM.added_capacity (global.HM.added_capacity + HP.capacity_new)
+        ]
+        
+        ;; Payout for EP
+        let tmp.elc_payout tmp.elc_price
+         
+        ;; 4.2.10.2.4 Update EP
+        ask ElectrolyzerProducers with [EP.id = tmp.ep_id] [  
+          ;; Apply governmental actions to h2 price (optional)     
+          if scenario.elc_subsidy or scenario.elc_guarant [
+            set tmp.elc_payout func.em.get_elc_payout tmp.elc_price
+          ]
+            
+          set EP.income (EP.income + tmp.elc_payout * tmp.elc_capacity_new)
+          set EP.expense (EP.expense + tmp.elc_price_min * tmp.elc_capacity_new)
+          set EP.capacity_left (EP.capacity_left - tmp.elc_capacity_new)
+          set EP.production (EP.production + tmp.elc_capacity_new)
+          set EP.production_cumulative (EP.production_cumulative + tmp.elc_capacity_new)
+          set EP.list_income lput (tmp.elc_payout * tmp.elc_capacity_new) EP.list_income
+          set EP.list_expense lput (tmp.elc_price_min * tmp.elc_capacity_new) EP.list_expense
+        ]
+          
+        ;; 4.2.10.2.5 Update MAN from EP
+        func.em.set_man_production tmp.ep_id tmp.elc_capacity_new tmp.elc_payout 
+        
+        ;; Write data (optional)
+        if settings.write [
+          write.SALE.year (global.HM.no_hp - 1) tmp.ep_id tmp.elc_price_max tmp.elc_price_min tmp.elc_price tmp.elc_payout tmp.elc_capacity_new
+        ]
+      ]
+    ]
+  ]
+      
+  ;; 4.2.11 Update or reset data
+  ;; 4.2.11.1 Update or reset data for market
+  set global.HM.production_h2 sum [ELC.production] of Electrolyzers
+  set global.HM.no_investment 0
+  set global.HM.installed_capacity sum [ELC.capacity] of Electrolyzers
+  set global.HM.cumulative_capacity (global.HM.cumulative_capacity + global.HM.added_capacity)
+  set global.HM.added_capacity 0
+  func.HM.set_threshold_min
+  
+  ;; 4.2.11.2 Update or reset data for electrolyzers
+  ask Electrolyzers [
+    set ELC.list_util []
+    set ELC.list_produced []
+    set ELC.list_income []
+    set ELC.list_expense []
+  ]
+  
+  ;; 4.2.11.3 Update or reset data for agents
+  ask HydrogenProducers with [HP.alive] [
+    if HP.invest [
+      set HP.capacity_new func.hm.get_capacity_new HP.capacity_new
+    ]
+    let tmp.owner HP.id
+    set HP.capacity_installed (sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.owner])
+    set HP.capacity_cumulative (HP.capacity_cumulative + HP.capacity_added)
+    set HP.capacity_added 0
+    set HP.invest false
+    set HP.list_assets link-neighbors
+  ]
+end
+
+to func.hm.create_hp_new [tmp.threshold tmp.delta_threshold_max tmp.capacity tmp.investment]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Tries to create a new hp, however only creates an new hp if
+  ;; they can find a good offer for a electrolyzer
+  ;; IN: float tmp.threshold - current investment threshold of
+  ;;                           the new hp [-]
+  ;;     float tmp.delta_threshold_max - maximal change in the
+  ;;                                     investment threshold [-]
+  ;;     float tmp.capacity - Capacity of the new ELC [MW]
+  ;;     float tmp.investment - Investment costs of the new 
+  ;;                            Electrolyzer [€] 
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Coordinate
+  let tmp.y (min [ycor] of HydrogenProducers)
+  let tmp.x (max [xcor] of HydrogenProducers with [ycor = tmp.y])
+  ifelse (tmp.x = -4) [
+    set tmp.y (tmp.y - 3)
+    set tmp.x -19
+  ][
+    set tmp.x tmp.x + 3
+  ]
+  
+  ;; Create new HP
+  create-HydrogenProducers 1 [
+    ;; Default settings
+    setxy tmp.x tmp.y
+    set color 94
+    set heading 0
+    
+    ;; General
+    set HP.id global.HM.no_hp
+    set HP.start_year global.year
+    set HP.delta_threshold_max tmp.delta_threshold_max
+    set HP.investment_time const.HM.investment_time ;int number of periods used for investment [-]
+    set HP.weight_price 0.5
+    set HP.weight_size 0.5
+    set HP.gamma ((random-float 2) * const.gamma)
+    
+    ;; Current values
+    set HP.alive true
+    set HP.threshold tmp.threshold
+    set HP.roi 0
+    set HP.roi_target global.HM.roi_target
+    set HP.income 0
+    set HP.net_cashflow 0
+    set HP.expense 0
+    set HP.profitability 0
+    set HP.expectation 0
+    set HP.marketshare 0
+    set HP.invest true
+    set HP.liquidity (-1 * tmp.investment)
+    set HP.balance 0
+    set HP.wallet 0; float liquidity for the wallet method of the hp [€]
+    set HP.wallet_in 0; float income for the wallet method of the hp [€]
+    set HP.wallet_out 0; float expense for the wallet method of the hp [€]
+    set HP.capacity_installed tmp.capacity
+    set HP.capacity_cumulative tmp.capacity
+    set HP.capacity_new tmp.capacity
+    set HP.capacity_added tmp.capacity
+    set HP.util 0
+    set HP.production 0
+    set HP.production_cumulative 0
+    set HP.specific_cashflow 0
+    set HP.w2p 0 ;int willingness to pay for new investment [€/MW]
+    set HP.lcoh 1e10
+    set HP.list_income_profitability [];list of income in the last n periods of the hp for the profitabilty [€]
+    set HP.list_expense_profitability [];list of expense in the last n periods of the hp for the profitabilty [€]
+    set HP.list_income_expectation [];list of income in the last n periods of the hp for the expected profitabilty [€]
+    set HP.list_expense_expectation [];list of expense in the last n periods of the hp for the expected profitabilty [€]
+    set HP.list_net_cashflow [];list net cashflows in the last n periods of the hp [€]
+    set HP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the hp for the specific cashflow [MW]
+    
+    ;; Tracking values
+    set HP.track.threshold []
+    set HP.track.income []
+    set HP.track.expense []
+    set HP.track.net_cashflow []
+    set HP.track.profitability []
+    set HP.track.marketshare []
+    set HP.track.invest []
+    set HP.track.liquidity []
+    set HP.track.capacity_installed []
+    set HP.track.capacity_cumulative []
+    set HP.track.capacity_new []
+    set HP.track.util []
+    set HP.track.production []
+    set HP.track.production_cumulative []
+    set HP.track.specific_cashflow []
+    set HP.track.lcoh []
+  ]
+  
+  ;; Update global.HM.no_hp
+  set global.HM.no_hp (global.HM.no_hp + 1)
+end
+
+to func.hm.create_elc_new [tmp.owner tmp.x tmp.y tmp.capacity tmp.threshold tmp.investment]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a new electrolyzrer for HP with ID = tmp.id
+  ;; IN: float tmp.owner - ID of the corresponding HP [-]
+  ;;     float tmp.x - xcor of HP [-]
+  ;;     float tmp.y - ycor of HP [-]
+  ;;     float tmp.capcity - capacity of the new ELC [MW]
+  ;;     float tmp.threshold - Investment threshold of HP at time
+  ;;                           of investment [-]
+  ;;     float tmp.investment - Investment costs of ELC [€]
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  hatch-Electrolyzers 1 [
+    ;; Default settings
+    setxy (tmp.x + 1) tmp.y
+    set color 95
+    set heading 180
+    
+    ;; General values
+    set ELC.id global.HM.no_elc ;identifier
+    set ELC.owner tmp.owner ;id of owner
+    set ELC.start_year global.year ;when entered the market [-]
+    set ELC.investment tmp.investment ;investment cost of the electrolyzer [€]
+    set ELC.threshold tmp.threshold ;threshold at time of investment [-]
+    set ELC.capacity tmp.capacity ;capacity [MW]
+    set ELC.lifetime const.ELC.lifetime + random const.ELC.lifetime_range ;lifetime [years]
+    set ELC.investment_time (item 0 ([HP.investment_time] of HydrogenProducers with [HP.id = tmp.owner]))
+    set ELC.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set ELC.age 0 ;int age of electrolyzer [-]
+    set ELC.profitability 0 ;float profitability of the elc [-]
+    set ELC.expectation 0
+    set ELC.roi 0
+    set ELC.income 0 ;float income of the elc [€]
+    set ELC.expense 0 ;float expense of the elc [€]
+    set ELC.lcoh 1e10 ;float levelized cost of hydrogen [€/MWh]
+    set ELC.liquidity (-1 * ELC.investment) ;float liquidity of the elc [€]
+    set ELC.production 0 ;float amount of hydrogen produced [MWh]
+    set ELC.production_cumulative 0 ;float cumulative amount of hydrogen produced [MWh]
+    set ELC.util 0 ;float utilization of the elc [-]
+    set ELC.list_util [] ;list of utilization rate [-]
+    set ELC.list_produced [] ;list of production [MWh]
+    set ELC.list_income [] ;list of incomes [€]
+    set ELC.list_expense [] ;list of expenses [€]
+    set ELC.list_income_profitability [];list of income in the last n periods of the elc for the profitabilty [€]
+    set ELC.list_expense_profitability [];list of expense in the last n periods of the elc for the profitabilty [€]
+    set ELC.list_income_expectation [];list of income in the last n periods of the elc for the expected profitabilty [€]
+    set ELC.list_expense_expectation [];list of expense in the last n periods of the elc for the expected profitabilty [€]
+    
+    ;; Tracking values
+    set ELC.track.age []
+    set ELC.track.profitability []
+    set ELC.track.income []
+    set ELC.track.expense []
+    set ELC.track.lcoh []
+    set ELC.track.liquidity []
+    set ELC.track.production []
+    set ELC.track.production_cumulative []
+    set ELC.track.util []
+    
+    ;; Create link with owner
+    create-link-with one-of HydrogenProducers with [HP.id = tmp.owner]
+  ]
+  
+  ;; Update global.HM.no_elc
+  set global.HM.no_elc (global.HM.no_elc + 1)
+end
+
+to func.hm.set_h2_price []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 2. Set the hydrogen price for the current year 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the global h2 price at the begining of each year based
+  ;; on the hydrogen production in the last year
+  ;; 
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Hydrogen production
+  let tmp.production_h2 global.HM.production_h2
+    
+  ;; Calculate willingness to pay (w2p) in the order in [€/MWh]
+  let tmp.w2p []
+  set tmp.w2p [237.88 198.38 171.46 166.15 159.77 109.97 99.32 91.56 89.39 68.79 66.92 62.58 50.39 43.15 41.86 37.23 32.88 -11.18	-36.18] ;; values from bcg w/o co2-tax @ 95€/t_co2
+  ;; Type: Refining Refining 
+  set tmp.w2p [175.02 135.52 128.20 117.91 96.92 66.71 55.32 48.30 41.15 29.01 24.79 6.39 -2.14 -5.09 -11.12 -14.28 -25.63 -69.74 -92.39] ;; values from bcg w/o co2-tax @ 95€/t_co2 and w/o fuel costs @ gas = 44 €/MWh
+  set tmp.w2p [190.74 151.23 139.02 129.97 112.63 77.52 66.32 59.12 53.21 35.79 29.01 17.39 8.86 6.97 -0.12 -9.91 -14.28 -69.74 -92.39] ;; values from bcg w/o co2-tax @ 95€/t_co2 and w/o fuel costs @ gas = 33 €/MWh
+  ;; Type: Refineries, Refineries, Ammonia, Methanol, Refineries, Ammonia, Power generation, Ammonia, Methanol, Steel, Industrial heat, Industrial heat, Power generation, Methanol, Industrial heat, Aviation, Refineries, Steel, Aviation @ gas = 44 €/MWh
+  ;; No.: 0, 0, 1, 2, 0, 1, 4, 1, 2, 3, 6, 6, 4, 2, 6, 5, 0, 3, 5 @ gas = 44 €/MWh
+  ;; Type: Refineries, Refineries, Ammonia, Methanol, Refineries, Ammonia, Power generation, Ammonia, Methanol, Industrial heat, Steel, Industrial heat, Power generation, Methanol, Industrial heat, Refineries, Aviation, Steel, Aviation @ gas = 33 €/MWh
+  ;; No.: 0, 0, 1, 2, 0, 1, 4, 1, 2, 6, 3, 6, 4, 2, 6, 0, 5, 3, 5 @ gas = 33 €/MWh
+  
+  ;; Conversion factors [MWh_fossil/MWh_h2] and emission savings [t_co2/MWh_h2] and the fuel replace costs [€/MWh_h2] in the order
+  ;; 0: H2-REFINING, 1: NG-AMMONIA, 2: NG-METHANOL, 3: COAL-STEEL, 4: NG-ELC, 5: OIL-AIR, 6: NG-HEAT
+  let tmp.con []
+  set tmp.con [1 0.983 1.096 2.797 1 1.32 1] ;; from https://doi.org/10.1016/j.energy.2022.124660
+  let tmp.saving []
+  set tmp.saving lput (item 0 tmp.con * const.gas_co2 / const.eta_steam_reforming) tmp.saving
+  set tmp.saving lput (item 1 tmp.con * const.gas_co2) tmp.saving
+  set tmp.saving lput (item 2 tmp.con * const.gas_co2) tmp.saving
+  set tmp.saving lput (item 3 tmp.con * const.coal_co2) tmp.saving
+  set tmp.saving lput (item 4 tmp.con * const.gas_co2) tmp.saving
+  set tmp.saving lput (item 5 tmp.con * const.oil_co2) tmp.saving
+  set tmp.saving lput (item 6 tmp.con * const.gas_co2) tmp.saving
+  let tmp.fuel []
+  set tmp.fuel lput (item 0 tmp.con * init.PM.c_gas_0 / const.eta_steam_reforming) tmp.fuel
+  set tmp.fuel lput (item 1 tmp.con * init.PM.c_gas_0) tmp.fuel
+  set tmp.fuel lput (item 2 tmp.con * init.PM.c_gas_0) tmp.fuel
+  set tmp.fuel lput (item 3 tmp.con * init.PM.c_coal_0) tmp.fuel
+  set tmp.fuel lput (item 4 tmp.con * init.PM.c_gas_0) tmp.fuel
+  set tmp.fuel lput (item 5 tmp.con * init.PM.c_oil_0) tmp.fuel
+  set tmp.fuel lput (item 6 tmp.con * init.PM.c_gas_0) tmp.fuel
+
+  ;; Calculate CO2-tax from [€/MWh_gas] to [€/t_co2]
+  let tmp.co2 func.pm.get_co2_tax / const.gas_co2
+    
+  ;; Calculate co2 tax in [€/MWh] for type and demand
+  ;; 0: H2-REFINING, 1: NG-AMMONIA, 2: NG-METHANOL, 3: COAL-STEEL, 4: NG-ELC, 5: OIL-AIR, 6: NG-HEAT
+  ;; No.: 0, 0, 1, 2, 0, 1, 4, 1, 2, 6, 3, 6, 4, 2, 6, 0, 5, 3, 5 @ gas = 33 €/MWh
+  let tmp.co2_type func.scalar_mult tmp.co2 tmp.saving
+  let tmp.co2_process []
+  set tmp.co2_process lput item 0 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 0 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 1 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 2 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 0 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 1 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 4 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 1 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 2 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 6 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 3 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 6 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 4 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 2 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 6 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 0 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 5 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 3 tmp.co2_type tmp.co2_process
+  set tmp.co2_process lput item 5 tmp.co2_type tmp.co2_process
+
+  
+  ;; Calculate fuel replace costs in [€/MWh] fory type and demand
+  ;; 0: H2-REFINING, 1: NG-AMMONIA, 2: NG-METHANOL, 3: COAL-STEEL, 4: NG-ELC, 5: OIL-AIR, 6: NG-HEAT
+  ;; No.: 0, 0, 1, 2, 0, 1, 4, 1, 2, 6, 3, 6, 4, 2, 6, 0, 5, 3, 5 @ gas = 33 €/MWh
+  let tmp.fuel_costs []
+  set tmp.fuel_costs lput item 0 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 0 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 1 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 2 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 0 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 1 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 4 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 1 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 2 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 6 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 3 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 6 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 4 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 2 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 6 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 0 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 5 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 3 tmp.fuel tmp.fuel_costs
+  set tmp.fuel_costs lput item 5 tmp.fuel tmp.fuel_costs
+  
+  ;; Calculate final w2p
+  let tmp.w2p_wco2 tmp.w2p
+  ifelse scenario.co2_tax [
+    set tmp.w2p_wco2 func.vector_add tmp.co2_process tmp.w2p ; add co2 tax
+  ][
+    set tmp.w2p_wco2 tmp.w2p
+  ]
+  let tmp.w2p_wfuel_wco2 func.vector_add tmp.fuel_costs tmp.w2p_wco2 ; add fuel costs
+  set tmp.w2p tmp.w2p_wfuel_wco2
+
+  ;; Demands in the order in [MWh]
+  let tmp.max_demand []
+  set tmp.max_demand [3731896 3157758 3157758 1722413 2583620 10047413 6315517 3444827 4593103 16937068 11769827 28993965 12056896 2296551 14066379	3444827	196355172 190326724 28419827] ;; max demand order for w/o CO2  
+  set tmp.max_demand [3731897 3157759 3157759 1722414 2583621 10047414 6315517 3444828 4593103 28993966 16937069 12056897 14066379 2296552 196355172 11769828 3444828 28419828 190326724] ;; max demand order for w/o CO2 and w/o fuel costs @ gas = 44 €/MWh
+  set tmp.max_demand [3731897	3157759	3157759	1722414	2583621	10047414 6315517 3444828 4593103 16937069	28993966 12056897	14066379 2296552 196355172 3444828 11769828 28419828 190326724] ;; max demand order for w/o CO2 and w/o fuel costs @ gas = 33 €/MWh
+
+
+  let tmp.demand []
+  set tmp.demand tmp.max_demand
+  
+  ;; Find order from high to low
+  let tmp.order [] 
+  foreach (range length tmp.w2p) [
+    x -> 
+    let tmp.lst []
+    let tmp.bool true
+    foreach tmp.order [
+      y -> 
+      if item x tmp.w2p > item y tmp.w2p and tmp.bool [
+        set tmp.lst lput x tmp.lst
+        set tmp.bool false
+      ]
+      set tmp.lst lput y tmp.lst
+    ]
+    if tmp.bool [
+      set tmp.lst lput x tmp.lst
+    ]
+    set tmp.order tmp.lst
+  ]
+    
+  ;; Find current hydrogen price
+  let tmp.done false 
+  let tmp.sum_demand 0
+  let tmp.price 1e-10
+  foreach tmp.order [
+    x ->
+    if not tmp.done [
+      set tmp.sum_demand tmp.sum_demand + item x tmp.demand
+      if tmp.production_h2 <= tmp.sum_demand [
+        set tmp.price item x tmp.w2p
+        set tmp.done true
+      ]
+    ]
+  ]
+  
+  ;; No Hydrogen price < 0
+  if tmp.price < 0 [
+    set tmp.price 0
+  ]
+  
+  ;; STOP DEBUG ONLY - DELETE ME -> func.pm.get_gas_price/const.eta_electrolyzer €/MWh (marginal costs) or init.PM.c_gas_0/const.eta_electrolyzer + 31.46 €/MWh (LCOH - Steam reforming)
+  ;if tmp.price > (func.pm.get_gas_price / const.eta_electrolyzer * 1.) [
+  ;  set tmp.price (func.pm.get_gas_price / const.eta_electrolyzer * 1.)
+  ;]
+  ;if tmp.price > (2 * 1000 / 33.3) [
+  ;  set tmp.price (2 * 1000 / 33.3)
+  ;]
+  ;set tmp.price (func.pm.get_gas_price / const.eta_electrolyzer)
+   
+  ;; 2.5 Set global hydrogen price
+  set global.HM.price_h2 tmp.price
+end
+
+to func.hm.set_threshold_min []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the minimal threshold for the hydrogen market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ifelse not scenario.ref [
+    ifelse global.HM.cumulative_capacity < (const.gamma * const.ELC.target_capacity) [
+      set global.HM.threshold_min (init.HM.threshold_0 * (1 - (global.HM.cumulative_capacity / (const.gamma * const.ELC.target_capacity))))
+    ][
+      set global.HM.threshold_min 0
+    ]
+  ][
+    set global.HM.threshold_min 0
+  ]
+end
+
+to-report func.hm.get_capacity_new [tmp.capacity_old]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the capacity for new investments in electrolyzer
+  ;; IN: float tmp.capacity_old - current capacity for new
+  ;;                              investment [MW]
+  ;; OUT: float tmp.capacity_new - future capacity for new
+  ;;                               investment [MW]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Determinen new capacity size
+  let tmp.capacity_new 0
+  let tmp.capacity_max 1000
+  ;set tmp.capacity_new round (tmp.capacity_old + (-1 * tmp.capacity_old ^ 2) / tmp.capacity_max + tmp.capacity_old)
+  set tmp.capacity_new round (1.25 * tmp.capacity_old)
+  if tmp.capacity_new >= tmp.capacity_max [
+    set tmp.capacity_new tmp.capacity_max
+  ]
+  report tmp.capacity_new
+end
+
+to-report func.hm.get_h2_payout [tmp.price]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the payout hydrogen producer get, including
+  ;; subsidies
+  ;; IN: float tmp.price - current hydrogen price for [€/MWh]
+  ;; OUT: float tmp.payout - payout for hydrogen 
+  ;;                         producers [€/MWh]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.payout 0
+  (ifelse
+    scenario.h2_subsidy [
+      set tmp.payout (tmp.price * (1 + GOV.h2_subsidy))
+    ]
+    scenario.h2_guarant [
+      ifelse tmp.price < GOV.h2_guarant [
+        set tmp.payout GOV.h2_guarant
+      ][
+        set tmp.payout tmp.price
+      ]
+    ][
+      set tmp.payout tmp.price
+    ]
+  )
+  
+  report tmp.payout
+end
+
+to-report func.hm.get_delta_threshold [tmp.profitability tmp.delta_threshold_max]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the change of profitability based on the 
+  ;; profitability and the maximum delta of a hp
+  ;; IN: float tmp.profitability - ratio between income and EAC
+  ;;                               of the HP [-]
+  ;;     float tmp.delta_threshold_max - maximum change in
+  ;;                                     threshold of the HP [-]
+  ;; OUT: float tmp.delta_threshold - change in investment
+  ;;                                  of the HP threshold [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate change
+  let tmp.delta_threshold (-1 * tmp.delta_threshold_max * func.tanh (const.beta * ln (tmp.profitability + 1e-10)))
+  
+  report tmp.delta_threshold
+end
+
+to-report func.hm.get_list_buyers []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a list with all HP, which is orderd by their
+  ;; willingness to pay
+  ;; IN: -
+  ;; OUT: list tmp.list - list of [HP.ids; willingness to pay; 
+  ;;                      capacity of new investment] orderd by
+  ;;                      the willingness to pay [[-];[€/MW];[MW]]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create list
+  let tmp.list []
+
+  ;; Add Hydrogen Producers
+  ask HydrogenProducers with [HP.alive] [
+    ;; Reset sublist
+    let tmp.sublist []
+    
+    ;; Calculate the willingness to pay in [€/MW]
+    let tmp.elc_price_max (HP.specific_cashflow * (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime))) / ((1 + HP.threshold) * const.discount_rate)
+    set HP.w2p tmp.elc_price_max ;  [€/MW]
+    
+    ;; Fill sub list for list of buyers
+    set tmp.sublist (sentence HP.id tmp.elc_price_max HP.capacity_new)
+    
+    ;; Find right place for sublist
+    ifelse empty? tmp.list [
+      set tmp.list lput tmp.sublist tmp.list
+    ][
+      let tmp.bool false
+      let tmp.foreachlist []
+      foreach tmp.list [
+        x -> 
+        ;; Add sublist
+        if not tmp.bool and (item 1 x) < (item 1 tmp.sublist) [
+          set tmp.foreachlist lput tmp.sublist tmp.foreachlist
+          set tmp.bool true
+        ]
+        ;; Add x
+        set tmp.foreachlist lput x tmp.foreachlist
+      ]
+      ;; Sublist wasn't added yet
+      if not tmp.bool [
+        set tmp.foreachlist lput tmp.sublist tmp.foreachlist
+      ]
+      set tmp.list tmp.foreachlist
+    ]
+  ]
+  report tmp.list
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- Electrolyzer market ------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to func.em.yearly []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.3 Electrolyzer Market yearly actions
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Update the cost to produce electrolyzers based on the
+  ;; learning rate. After that updates the investment threshold
+  ;; of all eps, with the new threshold do a npv to check if Ep
+  ;; should invest into a new manufacturing. The cost to produce
+  ;; depend on the marketshare of the current and cumulative
+  ;; marketshare of the ep. If all ep invest, create a new ep.
+  ;; Update Manufacturings and remove if to old. If a ep has no
+  ;; assets left remove the ep. If no ep left optional check if
+  ;; a new ep should be forced an do so.
+  ;; 4.3.1 Update global costs of electroyzers and lcoe
+  ;; 4.3.2 Update profitability, investment threshold and
+  ;;       specific cashflow
+  ;; 4.3.3 Investment decision via NPV and threshold
+  ;; 4.3.3.1 Calculate NPV
+  ;; 4.3.3.2 Calculate new production costs if NPV > I * threshold
+  ;; 4.3.3.3 Create new MAN if NPV > I * threshold
+  ;; 4.3.3.4 Update the EP if NPV > I * threshold
+  ;; 4.3.4 Save data
+  ;; 4.3.4.1 Save data for market
+  ;; 4.3.4.2 Save data for manufacturings
+  ;; 4.3.4.3 Save data for agents
+  ;; 4.3.5 Write data (optional)
+  ;; 4.3.6 Plot data (optional)
+  ;; 4.3.7 Track data (optional)
+  ;; 4.3.8 New EP if all other EP have invested
+  ;; 4.3.9 Update MAN age and remove MAN if to old and remove
+  ;;       EP if they dont have a MAN
+  ;; 4.3.10 New EP if no EP left and time w/o agent > time lag
+  ;;        (optional)
+  ;; 4.3.11 Update or reset data
+  ;; 4.3.11.1 Update or reset data for market
+  ;; 4.3.11.2 Update or reset data for manufacturings
+  ;; 4.3.11.3 Update or reset data for agents
+  ;; -----------------------------------------------------------
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; 4.3.1 Update global costs of electroyzers and lcoe
+  func.em.set_elc_costs
+  if sum [MAN.production] of Manufacturings > 0 [
+    let tmp.expense ((sum [MAN.crf * MAN.investment + MAN.expense] of Manufacturings with [MAN.age <= const.MAN.lifetime]) + (sum [MAN.expense] of Manufacturings with [MAN.age > const.MAN.lifetime]))
+    set global.EM.lcoe (tmp.expense / (sum [MAN.production] of Manufacturings))
+  ]
+  
+  ask ElectrolyzerProducers with [EP.alive] [
+    let tmp.owner EP.id
+    ifelse (sum [MAN.production] of Manufacturings with [MAN.owner = tmp.owner]) > 0 [
+      let tmp.expense ((sum [MAN.crf * MAN.investment + MAN.expense] of Manufacturings with [MAN.age <= const.MAN.lifetime and MAN.owner = tmp.owner]) + (sum [MAN.expense] of Manufacturings with [MAN.age > const.MAN.lifetime and MAN.owner = tmp.owner]))
+      set EP.lcoe (tmp.expense / (sum [MAN.production] of Manufacturings with [MAN.owner = tmp.owner]))
+    ][
+      set EP.lcoe 1e10
+    ]
+  ]
+  
+  ask Manufacturings [
+    ifelse MAN.production > 0 [
+      ifelse MAN.age > const.MAN.lifetime [
+        set MAN.lcoe (MAN.expense / MAN.production)
+      ][
+        set MAN.lcoe (MAN.crf * MAN.investment + MAN.expense) / MAN.production
+      ]
+    ][
+      set MAN.lcoe 1e10
+    ]
+  ]
+  
+  ;; 4.3.2 Update profitability, investment threshold and specific cashflow, return on investment
+  ask Manufacturings [
+    ;; Update profitability
+    let tmp.income MAN.income
+    let tmp.expense (MAN.crf * MAN.investment + MAN.expense)
+    let tmp.expense_expected (MAN.crf * MAN.investment  * (1 + MAN.threshold) + MAN.expense)
+    if MAN.age > const.MAN.lifetime [
+      set tmp.expense MAN.expense
+      set tmp.expense_expected MAN.expense
+    ]
+    
+    ifelse tmp.income = 0 [
+      set MAN.profitability 0
+      set MAN.expectation 0
+    ][
+      ifelse tmp.expense = 0 [
+        set MAN.profitability 1e10
+        set MAN.expectation 1e10
+      ][
+        set MAN.profitability (tmp.income / tmp.expense)
+        set MAN.expectation (tmp.income / tmp.expense_expected)
+      ]
+    ]
+    
+    ;; Update return on investment
+    set MAN.roi ((MAN.income - MAN.expense) / MAN.investment)
+  ]
+  
+  ask ElectrolyzerProducers with [EP.alive] [
+    let tmp.owner EP.id
+    
+    ;; Update profitiability
+    let tmp.income (sum [MAN.income] of Manufacturings with [MAN.owner = tmp.owner])
+    let tmp.expense (sum [MAN.crf * MAN.investment + MAN.expense] of Manufacturings with [MAN.owner = tmp.owner and MAN.age <= const.MAN.lifetime] + sum [MAN.expense] of Manufacturings with [MAN.owner = tmp.owner and MAN.age > const.MAN.lifetime])
+    let tmp.expense_expected (sum [MAN.crf * MAN.investment * (1 + MAN.threshold) + MAN.expense] of Manufacturings with [MAN.owner = tmp.owner and MAN.age <= const.MAN.lifetime] + sum [MAN.expense] of Manufacturings with [MAN.owner = tmp.owner and MAN.age > const.MAN.lifetime])
+    
+    ifelse tmp.income = 0 [
+      set EP.profitability 0
+      set EP.expectation 0
+    ][
+      ifelse tmp.expense = 0 [
+        set EP.profitability 1e10
+        set EP.expectation 1e10
+      ][
+        set EP.profitability (tmp.income / tmp.expense)
+        set EP.expectation (tmp.income / tmp.expense_expected)
+      ]
+    ]
+    
+    ;; Update return on investment
+    set EP.roi ((sum [MAN.income - MAN.expense] of Manufacturings with [MAN.owner = tmp.owner]) / (sum [MAN.investment] of Manufacturings with [MAN.owner = tmp.owner]))
+    
+    let tmp.delta_threshold func.em.get_delta_threshold (EP.roi / EP.roi_target) EP.delta_threshold_max
+    set EP.threshold (EP.threshold + tmp.delta_threshold)
+
+    ifelse global.HM.cumulative_capacity < (EP.gamma * const.ELC.target_capacity) [
+      let tmp.lower_limit (init.EM.threshold_0 * (1 - (global.HM.cumulative_capacity / (EP.gamma * const.ELC.target_capacity))))
+      if EP.threshold < tmp.lower_limit [
+        set EP.threshold tmp.lower_limit
+      ] 
+    ][
+      if EP.threshold < 0 [
+        set EP.threshold 0
+      ]
+    ]
+    
+    if EP.threshold < global.EM.threshold_min [
+      set EP.threshold global.EM.threshold_min
+    ]
+    
+    ;; Update specific_cashflow
+    set EP.specific_cashflow ((sum [MAN.income - MAN.expense] of Manufacturings with [MAN.owner = tmp.owner]) / (sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.owner]))
+    
+    ;; Update wallet
+    set EP.wallet_in tmp.income
+    set EP.wallet_out tmp.expense
+    set EP.wallet (EP.wallet_in - EP.wallet_out)
+  ]
+  
+  ;; 4.3.3 Investment decision via NPV and threshold
+  ask ElectrolyzerProducers with [EP.alive] [
+    ;; 4.3.3.1 Calculate NPV
+    let tmp.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.MAN.lifetime)))
+    let tmp.investment (EP.investment_new * EP.capacity_new)
+    ;; Apply governmental actions to man investment (optional)
+    if scenario.man_subsidy [
+      set tmp.investment (tmp.investment * (1 - GOV.man_subsidy))
+    ]
+    let tmp.npv (-1 * tmp.investment + EP.specific_cashflow * EP.capacity_new / tmp.crf)
+    
+    ;; Invest into new manufacturings
+    if (tmp.npv / tmp.investment) >= EP.threshold [
+      ;; 4.3.3.2 Calculate new production costs if NPV > I * threshold
+      let tmp.costs func.em.get_elc_cost_new EP.id
+      
+      ;; 4.3.3.3 Create new MAN if NPV > I * threshold
+      func.em.create_man_new EP.id xcor ycor EP.capacity_new EP.threshold tmp.investment tmp.costs
+      
+      ;; 4.3.3.4 Update the EP if NPV > I * threshold
+      set EP.invest true
+      set EP.list_assets link-neighbors
+      set EP.capacity_added EP.capacity_new
+      
+      set global.EM.no_investment (global.EM.no_investment + 1)
+      set global.EM.added_capacity (global.EM.added_capacity + EP.capacity_new)
+    ]
+  ]
+      
+  ;; 4.3.4 Save data
+  ;; 4.3.4.1 Save data for agents
+  ask ElectrolyzerProducers with [EP.alive] [
+    let tmp.owner EP.id
+    set EP.liquidity (EP.liquidity + sum [MAN.income - MAN.expense] of Manufacturings with [MAN.owner = tmp.owner])
+  ]
+  
+  ;; 4.3.5 Write data (optional)
+  if settings.write [
+    write.EM.year
+    write.EP.year
+    write.MAN.year
+  ]
+  
+  ;; 4.3.6 Plot data (optional)
+  if settings.plot [
+    plot.EM.year
+  ]
+  
+  ;; 4.3.7 Track data (optional)
+  if settings.track [
+    ;; ElectrolyzerMarket  
+    set track.EM.no_ep lput global.EM.no_ep track.EM.no_ep
+    set track.EM.no_man lput global.EM.no_man track.EM.no_man
+    set track.EM.no_investment lput track.EM.no_investment global.EM.no_investment
+    set track.EM.cost_elc lput global.EM.cost_elc track.EM.cost_elc
+    set track.EM.installed_capacity lput global.EM.installed_capacity track.EM.installed_capacity
+    set track.EM.cumulative_capacity lput global.EM.cumulative_capacity track.EM.cumulative_capacity
+    set track.EM.added_capacity lput global.EM.added_capacity track.EM.added_capacity
+    set track.EM.threshold_min lput global.EM.threshold_min track.EM.threshold_min
+    set track.EM.lcoe lput global.EM.lcoe track.EM.lcoe
+    set track.EM.time_wo_agent lput global.EM.time_wo_agent track.EM.time_wo_agent
+  
+    ;; ElectrolyzerProducers
+    ask ElectrolyzerProducers with [EP.alive] [
+      set EP.track.threshold lput EP.threshold EP.track.threshold
+      set EP.track.income lput EP.income EP.track.income
+      set EP.track.expense lput EP.expense EP.track.income
+      set EP.track.net_cashflow lput EP.net_cashflow EP.track.net_cashflow
+      set EP.track.profitability lput EP.profitability EP.track.profitability
+      set EP.track.marketshare lput EP.marketshare EP.track.marketshare
+      set EP.track.invest lput EP.invest EP.track.invest
+      set EP.track.liquidity lput EP.liquidity EP.track.liquidity
+      set EP.track.costs lput EP.costs EP.track.costs
+      set EP.track.capacity_installed lput EP.capacity_installed EP.track.capacity_installed
+      set EP.track.capacity_cumulative lput EP.capacity_cumulative EP.track.capacity_cumulative
+      set EP.track.capacity_left lput EP.capacity_left EP.track.capacity_left
+      set EP.track.capacity_new lput EP.capacity_new EP.track.capacity_new
+      set EP.track.util lput EP.util EP.track.util
+      set EP.track.production lput EP.production EP.track.production
+      set EP.track.production_cumulative lput EP.production_cumulative EP.track.production_cumulative
+      set EP.track.specific_cashflow lput EP.specific_cashflow EP.track.specific_cashflow
+      set EP.track.lcoe lput EP.lcoe EP.track.lcoe
+    ]      
+    
+    ;; Manufacturings
+    ask Manufacturings [
+      set MAN.track.age lput MAN.age MAN.track.age
+      set MAN.track.profitability lput MAN.profitability MAN.track.profitability
+      set MAN.track.income lput MAN.income MAN.track.income
+      set MAN.track.expense lput MAN.expense MAN.track.expense
+      set MAN.track.lcoe lput MAN.lcoe MAN.track.lcoe
+      set MAN.track.liquidity lput MAN.liquidity MAN.track.liquidity
+      set MAN.track.production lput MAN.production MAN.track.production
+      set MAN.track.production_cumulative lput MAN.production_cumulative MAN.track.production_cumulative
+      set MAN.track.capacity_left lput MAN.capacity_left MAN.track.capacity_left
+      set MAN.track.util lput MAN.util MAN.track.util
+    ]
+  ]
+  
+  ;; 4.3.8 New EP if all other EP have invested
+  if global.EM.no_investment = count ElectrolyzerProducers with [EP.alive] and any? ElectrolyzerProducers with [EP.alive] [
+    func.em.create_ep_new
+  ]
+  
+  ;; 4.3.9 Update MAN age and remove MAN if to old and remove EP if they dont have a MAN
+  ask Manufacturings [
+    set MAN.age (MAN.age + 1)
+    if MAN.age > MAN.lifetime [
+      die
+    ]
+  ]
+  
+  ask ElectrolyzerProducers with [EP.alive] [
+    set EP.list_assets link-neighbors
+    if not any? EP.list_assets [
+      set EP.alive false
+    ]
+  ]
+  
+  ;; 4.3.10 New EP if no EP left and time w/o agent > time lag (optional)
+  if is-number? scenario.time_lag and not any? ElectrolyzerProducers with [EP.alive] [
+    ifelse global.EM.time_wo_agent >= scenario.time_lag [
+      func.em.create_ep_new
+    ][
+      set global.EM.time_wo_agent (global.EM.time_wo_agent + 1)
+    ]
+  ]
+  
+  ;; 4.3.11 Update or reset data
+  ;; 4.3.11.1 Update or reset data for market
+  set global.EM.no_investment 0
+  set global.EM.installed_capacity sum [MAN.capacity] of Manufacturings
+  set global.EM.cumulative_capacity (global.EM.cumulative_capacity + global.EM.added_capacity)
+  set global.EM.added_capacity 0
+  func.EM.set_threshold_min
+  
+  ;; 4.3.11.2 Update or reset data for manufacturings
+  ask Manufacturings [
+    set MAN.capacity_left MAN.capacity
+    set MAN.production 0
+    set MAN.util 0
+    set MAN.list_produced []
+    set MAN.list_income []
+    set MAN.list_expense []
+  ]
+  
+  ;; 4.3.11.3 Update or reset data for agents
+  ask ElectrolyzerProducers with [EP.alive] [
+    if EP.invest [
+      set EP.capacity_new func.em.get_capacity_new EP.capacity_new
+      set EP.investment_new func.em.get_investment_new EP.investment_new
+    ]
+    let tmp.owner EP.id
+    set EP.production 0
+    set EP.capacity_installed sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.owner]
+    set EP.capacity_cumulative (EP.capacity_cumulative + EP.capacity_added)
+    set EP.capacity_added 0
+    set EP.capacity_left EP.capacity_installed
+    set EP.costs min [MAN.costs] of EP.list_assets
+    set EP.invest false
+    set EP.income 0
+    set EP.expense 0
+  ]
+end
+
+to func.em.create_ep_new []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a new electrolyzerproducer who will invest into a new man
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Coordinates
+  let tmp.y (min [ycor] of ElectrolyzerProducers)
+  let tmp.x (max [xcor] of ElectrolyzerProducers with [ycor = tmp.y])
+  ifelse (tmp.x = -4) [
+    set tmp.y (tmp.y - 3)
+    set tmp.x -19
+  ][
+    set tmp.x tmp.x + 3
+  ]
+  
+  ;; Create EP
+  create-ElectrolyzerProducers 1 [
+    ;; Default settings
+    setxy tmp.x tmp.y
+    set color 66
+    set heading 0
+    
+    ;; General values
+    set EP.id global.EM.no_ep
+    set EP.start_year global.year
+    set EP.delta_threshold_max random-float const.EM.delta_threshold ;maximal change in threshold [-]
+    set EP.investment_time const.EM.investment_time ;int number of periods used for investment [-]
+    set EP.gamma ((random-float 2) * const.gamma)
+    
+    ;; Current values
+    set EP.alive true ;boolean if alive [-]
+    set EP.threshold global.EM.threshold_min ;float investment threshold [-]
+    set EP.income 0 ;float income of the ep [€]
+    set EP.expense 0 ;float expense of the ep [€]
+    set EP.net_cashflow 0 ;float netto cashflow of the ep [€]
+    set EP.profitability 0 ;float total profitability of the ep [-]
+    set EP.expectation 0
+    set EP.roi 0
+    set EP.roi_target global.EM.roi_target
+    set EP.marketshare 0 ;float market share [-]
+    set EP.invest false ;boolean if invest [-]
+    set EP.investment_new init.EM.c_man_0 ;investment cost for new man [€/MW/year]
+    set EP.liquidity 0 ;float liquidity of the ep [€]
+    set EP.balance 0
+    set EP.wallet 0; float liquidity for the wallet method of the ep [€]
+    set EP.wallet_in 0; float income for the wallet method of the ep [€]
+    set EP.wallet_out 0; float expense for the wallet method of the ep [€]
+    set EP.costs init.HM.c_elc_0 ;float minimal costs for electrolyzer production [€/MW]
+    set EP.capacity_installed 0 ;int installed owned capacity [MW/year]
+    set EP.capacity_cumulative 0 ;int cumulative owned capacity [MW/year]
+    ;set EP.capacity_new const.MAN.new_capacity ;int capacity for new investment [MW/year]
+    set EP.capacity_new (max [MAN.capacity] of Manufacturings)
+    set EP.capacity_left EP.capacity_new ;int capacity left for production [MW]
+    set EP.capacity_added EP.capacity_new ;int capacity added in this year [MW/year]
+    set EP.util 0 ;float utilization rate [-]
+    set EP.production 0 ;int production of electrolyzers [MW]
+    set EP.production_cumulative 0 ;int cumulative production of electrolyzers [MW]
+    set EP.specific_cashflow 0 ;float specific netto cashflow [€/MW/year]
+    set EP.lcoe 1e10 ;float levelized coast of electrolyzers for ep [€/MW]
+    set EP.list_income [] ;list of incomes [€]
+    set EP.list_expense [] ;list of expenses [€]
+    set EP.list_income_profitability [];list of income in the last n periods of the ep for the profitabilty [€]
+    set EP.list_expense_profitability [];list of expense in the last n periods of the ep for the profitabilty [€]
+    set EP.list_income_expectation [];list of income in the last n periods of the ep for the expected profitabilty [€]
+    set EP.list_expense_expectation [];list of income in the last n periods of the ep for the expected profitabilty [€]
+    set EP.list_net_cashflow [];list of the net cashflows in the last n periods of the ep for the specific cashflow [€]
+    set EP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the ep for the specific cashflow [MW/year]
+    
+    ;; Tracking values
+    set EP.track.threshold []
+    set EP.track.income []
+    set EP.track.expense []
+    set EP.track.net_cashflow []
+    set EP.track.profitability []
+    set EP.track.marketshare []
+    set EP.track.invest []
+    set EP.track.liquidity []
+    set EP.track.costs []
+    set EP.track.capacity_installed []
+    set EP.track.capacity_cumulative []
+    set EP.track.capacity_left []
+    set EP.track.capacity_new []
+    set EP.track.util []
+    set EP.track.production []
+    set EP.track.production_cumulative []
+    set EP.track.specific_cashflow []
+    set EP.track.lcoe []
+    
+    ;; New MAN for the EP
+    let tmp.costs func.em.get_elc_cost_new EP.id
+    set EP.costs tmp.costs
+    func.em.create_man_new EP.id tmp.x tmp.y EP.capacity_new EP.threshold EP.investment_new tmp.costs
+    
+    ;; Update list of assets
+    set EP.list_assets link-neighbors
+  ]
+    
+  ;; Update global.EM.no_ep
+  set global.EM.no_ep (global.EM.no_ep + 1)
+end
+
+to func.em.create_man_new [tmp.owner tmp.x tmp.y tmp.capacity tmp.threshold tmp.investment tmp.costs]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a new manufacturing capacity for EP with ID = tmp.id
+  ;; IN: float tmp.owner - ID of the corresponding EP [-]
+  ;;     float tmp.x - xcor of EP [-]
+  ;;     float tmp.y - ycor of EP [-]
+  ;;     float tmp.capacity - capacity of the new MAN [MW]
+  ;;     float tmp.threshold- Investment threshold of EP at time
+  ;;                          of investment [-]
+  ;;     float tmp.investment - Investment costs of EP [€]
+  ;;     float tmp.costs - Costs to produce Electrolyzers [€/MW]
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  hatch-Manufacturings 1 [
+    ;; Default settings
+    setxy (tmp.x + 1) tmp.y
+    set color 63
+    set heading 180
+    
+    ;; General values
+    set MAN.id global.EM.no_man ;identifier
+    set MAN.owner tmp.owner ;id of owner
+    set MAN.start_year global.year ;when entered the market [-]
+    set MAN.capacity tmp.capacity ;capacity [MW/year]
+    set MAN.investment tmp.investment ;investment cost of the manufacturing [€]
+    set MAN.investment_time item 0 [EP.investment_time] of ElectrolyzerProducers with [EP.id = tmp.owner]
+    set MAN.threshold tmp.threshold ;threshold at time of investment [-]
+    set MAN.lifetime const.MAN.lifetime  + random const.MAN.lifetime_range ;lifetime [years]
+    set MAN.costs tmp.costs ;float costs to produce electrolyzer [€/MW]
+    set MAN.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.MAN.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set MAN.age 0 ;int age of manufacturing [-]
+    set MAN.profitability 0 ;float profitability of the man [-]
+    set MAN.expectation 0
+    set MAN.roi 0
+    set MAN.income 0 ;float income of the manufacturing [€]
+    set MAN.expense 0 ;float expense of manufacturing [€]
+    set MAN.lcoe 1e10 ;float levelized costs of electrolyzers [€/MW]
+    set MAN.liquidity 0 ;float liquidity of the man [€]
+    set MAN.production 0 ;float amount of electrolyzers produced [MW]
+    set MAN.production_cumulative 0 ;float cumulative amount of electrolyzers produced [MW]
+    set MAN.capacity_left MAN.capacity;int capacity left to produce electrolyzers [MW]
+    set MAN.util 0 ;float utilization rate [-]
+    set MAN.list_produced [] ;list of production [MW]
+    set MAN.list_income [] ;list of incomes [€]
+    set MAN.list_expense [] ;list of expense [€]
+    set MAN.list_income_profitability []
+    set MAN.list_expense_profitability []
+    set MAN.list_income_expectation []
+    set MAN.list_expense_expectation []
+    
+    ;; Tracking values
+    set MAN.track.age []
+    set MAN.track.profitability []
+    set MAN.track.income []
+    set MAN.track.expense []
+    set MAN.track.lcoe []
+    set MAN.track.liquidity []
+    set MAN.track.production []
+    set MAN.track.production_cumulative []
+    set MAN.track.capacity_left []
+    set MAN.track.util []
+    
+    ;; Create link with owner
+    create-link-with one-of ElectrolyzerProducers with [EP.id = tmp.owner]
+  ]
+  
+  ;; Update the EP
+  ask ElectrolyzerProducers with [EP.id = tmp.owner] [
+    set EP.liquidity (EP.liquidity - tmp.investment)
+  ]
+  
+  ;; Update global.EM.no_man and global.EM.capacity_added
+  set global.EM.no_man (global.EM.no_man + 1)
+  set global.EM.added_capacity (global.EM.added_capacity + tmp.capacity)
+end
+
+to func.em.set_threshold_min []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the minimal threshold for the electrolyzer market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ifelse not scenario.ref [
+    ifelse global.HM.cumulative_capacity < (const.gamma * const.MAN.target_capacity) [
+      set global.EM.threshold_min (init.EM.threshold_0 * (1 - (global.HM.cumulative_capacity / (const.gamma * const.MAN.target_capacity))))
+    ][
+      set global.EM.threshold_min 0
+    ]
+  ][
+    set global.EM.threshold_min 0
+  ]
+end
+
+to func.em.set_elc_costs []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Sets the current lowest costs for ELC in the EM [€/MW]
+  ;; IN: - 
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate the lowest costs based on learning rate (lambda)
+  set global.EM.cost_elc init.HM.c_elc_0 * (global.HM.cumulative_capacity / (init.HM.no_elc_0 * const.ELC.new_capacity)) ^ (log (1 - const.MAN.learning_rate) 2)
+end
+
+to func.em.set_man_production [tmp.owner tmp.capacity tmp.payout]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Updates MAN from the EP with tmp.owner
+  ;; IN: int tmp.owner - ID of the ElectrolyzerProducer [-]
+  ;;     float tmp.capacity - Size of the electrolyzer to
+  ;;                          produce [MW]
+  ;;     float tmp.payout - Price the EP gets [€/MW]
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Remaining capacity that has to be produced
+  let tmp.capacity_remain tmp.capacity
+  
+  ;; Create list of MAN owned by the EP orderd by costs
+  let tmp.list_man sort-on [MAN.costs] Manufacturings with [MAN.owner = tmp.owner and MAN.capacity_left > 0]
+  
+  ;; Update the Manufacturings
+  let tmp.boolean true
+  while [tmp.boolean] [
+    ;; Case 1: first entry of MAN has enough capacity left
+    ifelse ([MAN.capacity_left] of first tmp.list_man) >= tmp.capacity_remain [
+      ;; Update the MAN
+      ask first tmp.list_man [
+        set MAN.production (MAN.production + tmp.capacity_remain)
+        set MAN.capacity_left (MAN.capacity_left - tmp.capacity_remain)
+        set MAN.list_produced lput tmp.capacity_remain MAN.list_produced
+        set MAN.list_income lput (tmp.capacity_remain * tmp.payout) MAN.list_income
+        set MAN.list_expense lput (tmp.capacity_remain * MAN.costs) MAN.list_expense
+        set MAN.util (MAN.production / MAN.capacity)
+      ]
+      ;; Quit loop
+      set tmp.boolean false
+    ;; Case 2; first entry of MAN does not have enough capacity left
+    ][
+      ;; Update capacity remain
+      set tmp.capacity_remain (tmp.capacity_remain - [MAN.capacity_left] of first tmp.list_man)
+      ;; Update the MAN
+      ask first tmp.list_man [
+        set MAN.production MAN.capacity
+        set MAN.list_produced lput MAN.capacity_left MAN.list_produced
+        set MAN.list_income lput (MAN.capacity_left * tmp.payout) MAN.list_income
+        set MAN.list_expense lput (MAN.capacity_left * MAN.costs) MAN.list_expense
+        set MAN.capacity_left 0
+        set MAN.util 1
+      ]
+      ;; Remove the current MAN from the list
+      set tmp.list_man bf tmp.list_man
+    ]
+  ]
+end
+
+to-report func.em.get_elc_payout [tmp.price]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the payout electrolyzer producer get, including
+  ;; subsidies
+  ;; IN: float tmp.price - current electrolyzer price for [€/MW]
+  ;; OUT: float tmp.payout - payout for electrolyzer 
+  ;;                         producers [€/MW]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.payout 0
+  (ifelse
+    scenario.elc_subsidy [
+      set tmp.payout (tmp.price * (1 + GOV.elc_subsidy))
+    ]
+    scenario.elc_guarant [
+      ifelse tmp.price < GOV.elc_guarant [
+        set tmp.payout GOV.elc_guarant
+      ][
+        set tmp.payout tmp.price
+      ]
+    ][
+      set tmp.payout tmp.price
+    ]
+  )
+  
+  report tmp.payout
+end
+
+to-report func.em.get_elc_cost_new [tmp.id]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Reports the costs for ELC for a new MAN for EP with tmp.id
+  ;; IN: int tmp.id - ID of the EP who builds a new MAN
+  ;; OUT: float tmp.costs - Costs for production of ELC in MAN
+  ;;                        for EP [€/MW]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate the inexperience penalty
+  let tmp.penalty 1 + const.EM.inexperience_penalty_max
+  
+  ;; Determine the best and worst player
+  if any? ElectrolyzerProducers with [EP.alive] [
+    ;; Maximum and minimal values
+    let tmp.max 0
+    let tmp.min 1e10
+    let tmp.ep 0
+    let tmp.ep_production 0
+    let tmp.ep_production_cum 0
+    
+    ;; Market values 
+    ;; Current production of all existing EPs
+    let tmp.total_production 0
+    set tmp.total_production sum [EP.production] of ElectrolyzerProducers with [EP.alive and EP.production_cumulative > 0]
+    if tmp.total_production = 0 [
+      set tmp.total_production 1e-10
+    ]
+    ;; Cumulative production of all existing EPS
+    let tmp.total_production_cumulative 0
+    set tmp.total_production_cumulative sum [EP.production_cumulative] of ElectrolyzerProducers with [EP.alive and EP.production_cumulative > 0]
+ 
+    ;; Find maximum and minimal values
+    ask ElectrolyzerProducers with [EP.alive and EP.production_cumulative > 0] [
+      set tmp.ep_production (EP.production / tmp.total_production) ^ 2
+      set tmp.ep_production_cum (EP.production_cumulative / tmp.total_production_cumulative) ^ 2
+      set tmp.ep sqrt(tmp.ep_production + tmp.ep_production_cum)
+      if tmp.ep > tmp.max [
+        set tmp.max tmp.ep
+      ]
+      if tmp.ep < tmp.min [
+        set tmp.min tmp.ep
+      ]
+    ]
+    
+    ;; Determine the penalty for the current EP
+    if (sum [EP.production_cumulative] of ElectrolyzerProducers with [EP.id = tmp.id and EP.alive] > 0 ) [
+      ifelse tmp.min = tmp.max [
+        set tmp.penalty 1 
+      ][  
+        ;; EP
+        set tmp.ep_production (sum [EP.production] of ElectrolyzerProducers with [EP.id = tmp.id] / tmp.total_production) ^ 2
+        set tmp.ep_production_cum (sum [EP.production_cumulative] of ElectrolyzerProducers with [EP.id = tmp.id] / tmp.total_production_cumulative) ^ 2
+        set tmp.ep sqrt(tmp.ep_production + tmp.ep_production_cum)
+        set tmp.penalty (1 + (const.EM.inexperience_penalty_max * (tmp.max - tmp.ep) / (tmp.max - tmp.min)))
+      ]
+    ]
+  ]
+  
+  ;; Production costs
+  let tmp.costs (global.EM.cost_elc * tmp.penalty)
+  report tmp.costs
+end
+
+to-report func.em.get_elc_cost_actual [tmp.id tmp.capacity]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Reports how much producing will actual cost the EP with
+  ;; tmp.id
+  ;; IN: float tmp.id - ID of the ElectrolyzerProducer [-]
+  ;;     float tmp.capcity - Capacity to produce [MW]
+  ;; OUT: float tmp.cost - Actual cost to produce [€/MW]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Remaining capacity that has to be produced
+  let tmp.capacity_remain tmp.capacity
+  
+  ;; Create list of MAN owned by the EP orderd by costs
+  let tmp.list_man sort-on [MAN.costs] Manufacturings with [MAN.owner = tmp.id and MAN.capacity_left > 0]
+   
+  ;; Calculate the costs to produce
+  let tmp.cost 0
+  let tmp.boolean true
+  while [tmp.boolean] [
+    ;; Case 1: first entry of MAN has enough capacity left
+    ifelse ([MAN.capacity_left] of first tmp.list_man) >= tmp.capacity_remain [
+      set tmp.cost (tmp.cost + tmp.capacity_remain * [MAN.costs] of first tmp.list_man)
+      ;; Quit loop
+      set tmp.boolean false
+    ][
+      ;; Case 2; first entry of MAN does not have enough capacity left
+      set tmp.cost (tmp.cost + [MAN.costs * MAN.capacity_left] of first tmp.list_man)
+      set tmp.capacity_remain (tmp.capacity_remain - [MAN.capacity_left] of first tmp.list_man)
+      set tmp.list_man bf tmp.list_man
+    ]
+  ]
+  
+  ;; Convert costs from [€] -> [€/MW]
+  set tmp.cost (tmp.cost / tmp.capacity)
+  
+  report tmp.cost
+end
+
+to-report func.em.get_list_sellers [tmp.capacity]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Creates a list with all MAN, orderd by the minimal 
+  ;; production costs
+  ;; IN: int tmp.capacity - Asked capacity be HP
+  ;; OUT: list tmp.list   - list of all EPs with [EP.id;
+  ;;                        production costs; size of ELC]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create list
+  let tmp.list []
+  
+  ;; Add Electrolyzer producer
+  ask ElectrolyzerProducers with [EP.alive and EP.capacity_left > 0] [
+    ;; Reset sublist
+    let tmp.sublist []
+    
+    ;; ID
+    let tmp.id EP.id
+    
+    ;; Electrolyzer size
+    let tmp.elc_size tmp.capacity
+    if EP.capacity_left < tmp.capacity [
+      set tmp.elc_size EP.capacity_left
+    ]
+    
+    ;; Costs
+    let tmp.costs func.em.get_elc_cost_actual tmp.id tmp.elc_size
+      
+    ;; fill sublist for list of sellers
+    set tmp.sublist (sentence tmp.id tmp.costs tmp.elc_size)
+      
+    ;; Add to list
+    set tmp.list lput tmp.sublist tmp.list
+  ]
+  
+  report tmp.list
+end
+
+to-report func.em.get_delta_threshold [tmp.profitability tmp.delta_threshold_max]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the change of threshold based on the 
+  ;; profitability and the maximum delta of a hp
+  ;; IN: float tmp.profitability - ratio between income and EAC
+  ;;                               of the EP [-]
+  ;;     float tmp.delta_threshold_max - maximum change in
+  ;;                                     threshold of the EP [-]
+  ;; OUT: float tmp.delta_threshold - change in investment
+  ;;                                  of the EP threshold [-]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate change
+  let tmp.delta_threshold (-1 * tmp.delta_threshold_max * func.tanh (const.beta * ln (tmp.profitability + 1e-10)))
+  
+  report tmp.delta_threshold
+end
+  
+to-report func.em.get_capacity_new [tmp.capacity_old]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the capacity for new investments in manufacturings
+  ;; IN: float tmp.capacity_old - current capacity for new
+  ;;                              investment [MW/year]
+  ;; OUT: float tmp.capacity_new - future capacity for new
+  ;;                               investment [MW/year]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Determinen new capacity size
+  let tmp.capacity_new 0
+  let tmp.capacity_max 1000
+  ;;set tmp.capacity_new round (tmp.capacity_old + (-1 * tmp.capacity_old ^ 2) / tmp.capacity_max + tmp.capacity_old)
+  set tmp.capacity_new round (1.25 * tmp.capacity_old)
+  if tmp.capacity_new >= tmp.capacity_max [
+    set tmp.capacity_new tmp.capacity_max
+  ]
+  report tmp.capacity_new
+end
+
+to-report func.em.get_investment_new [tmp.investment_old]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the costs for new investments, changes only if
+  ;; there was an investment
+  ;; IN: float tmp.investment_old - the current costs for new
+  ;;                                investments
+  ;; OUT: float tmp.investment_new - the new costs for new
+  ;;                                 investments
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  let tmp.investment_new tmp.investment_old ;; currently no change
+  report tmp.investment_new
+end
+
+to-report func.em.get_barging_factor [tmp.hp_id tmp.ep_id]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Returns the barging factor for sales of electrolyzers
+  ;; IN: int tmp.hp_id - ID of HydrogenProducer or 1e10 for new 
+  ;;                     HydrogenProducer
+  ;;     int tmp.ep_id - ID of ElectrolyzerProducer
+  ;; OUT: float tmp.beta - barging factor between 0 and 1
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Calculate barging factor
+  let tmp.beta 0.5 ;; currently really simple
+  let tmp.hp_share 1e-10
+  let tmp.ep_share 1e-10
+ 
+;  ;; Get marketshare
+;  if tmp.hp_id < 1e10 [
+;    set tmp.hp_share (item 0 [HP.production] of HydrogenProducers with [HP.id = tmp.hp_id]) / (sum [HP.production] of HydrogenProducers with [HP.alive])
+;  ]
+;  ifelse (sum [EP.production_cumulative] of ElectrolyzerProducers with [EP.alive]) > 0 [
+;    set tmp.ep_share (item 0 [EP.production_cumulative] of ElectrolyzerProducers with [EP.id = tmp.ep_id]) / (sum [EP.production_cumulative] of ElectrolyzerProducers with [EP.alive])
+;  ][
+;    set tmp.ep_share 1 / (count ElectrolyzerProducers with [EP.alive])
+;  ]
+;  
+;  if tmp.hp_share = 0 [
+;    set tmp.hp_share 1e-10
+;  ]
+;  if tmp.ep_share = 0 [
+;    set tmp.ep_share 1e-10
+;  ]
+;  
+;  let tmp.ratio tmp.ep_share / tmp.hp_share
+  
+  ;; New method use demand and supply
+  let tmp.demand sum [HP.capacity_new] of HydrogenProducers with [HP.alive = true]
+  let tmp.supply sum [MAN.capacity] of Manufacturings
+  
+  if tmp.supply = 0 [
+    set tmp.supply 1e-10
+  ]
+  
+  let tmp.ratio tmp.demand / tmp.supply
+  
+  ifelse tmp.ratio <= 1 [
+    set tmp.beta (0.5 * tmp.ratio)
+  ][
+    set tmp.beta (1 - 0.5 * tmp.ratio ^ -1)
+  ]
+  
+  report tmp.beta
+end

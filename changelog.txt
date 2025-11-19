@@ -1,0 +1,249 @@
+v1.7.25.5.15
+changed - setup-init - init.PM.c_gas 44 -> 33 €/MWh average value for 2024
+changed - func.hm.set_h2_price - adjusted order and amounts based on new gas price of 33€/MWh
+fixed - func.hm.yearly - wrong way to calculate the LCOE of the whole market
+
+v1.7.25.5.9
+changed - setup-init - init.EM.no_hp_0 5 -> 6 to get to 150MW ELC in year 0 based on www.wasserstoff-kompass.de (131MW)
+changed - setup-init - init.EM.no_elc_0 10 -> 6 to get to 150MW ELC in year 0 based on www.wasserstoff-kompass.de (131MW)
+changed - setup-const - const.ELC.new_capacity 50 -> 25 to get to 150MW ELC in year 0 based on www.wasserstoff-kompass.de (131MW)
+fixed - func.hm.set_h2_price - only includes co2 tax if scenario.co2_tax is true
+
+v1.7.25.5.1
+changed - setup-pm - global.PM.roi_target now based on capital recovery factor for RES
+changed - setup-hm - global.HM.roi_target now based on capital recovery factor for ELC
+changed - setup-em - global.EM.roi_target now based on captial recovery factor for MAN
+added - class.nls - PP.wallet for wallet method
+added - class.nls - PP.wallet_in for wallet method
+added - class.nls - PP.wallet_out for wallet method
+added - class.nls - HP.wallet for wallet method
+added - class.nls - HP.wallet_in for wallet method
+added - class.nls - HP.wallet_out for wallet method
+added - class.nls - EP.wallet for wallet method
+added - class.nls - EP.wallet_in for wallet method
+added - class.nls - EP.wallet_out for wallet method
+changed - write.PP.year - now write PP.wallet PP.wallet_in and PP.wallet_out out
+changed - write.HP.year - now write HP.wallet HP.wallet_in and HP.wallet_out out
+changed - write.EP.year - now write EP.wallet EP.wallet_in and EP.wallet_out out
+
+v1.7.25.4.15
+added - class.nls - PP.ROI return on investment in the current year
+added - class.nls - PP.ROI_target target for ROI
+added - class.nls - HP.ROI return on investment in the current year
+added - class.nls - HP.ROI_target target for ROI
+added - class.nls - EP.ROI return on investment in the current year
+added - class.nls - EP.ROI_target target for ROI
+added - main.nlogo - global.PM.roi_target, global.HM.roi_target, global.EM.roi_target targets for ROI for each market
+changed - func.pm.yearly - now calculates delta_threshold with PP.roi / PP.roi_target
+changed - func.hm.yearly - now calculates delta_threshold with HP.roi / HP.roi_target
+changed - func.em.yearly - now calculates delta_threshold with EP.roi / EP.roi_target
+changed - func.pm.yearly - now calculates roi for res, elc and man with benefits-income / investment instead of liquidity / investment
+changed - write.pp.yearly - now writes out also pp.roi
+changed - write.hp.yearly - now writes out also hp.roi
+changed - write.ep.yearly - now writes out also ep.roi
+
+v1.6.25.4.1
+changed - func.pm.daily - now calculates lcoe only including investment costs until res.age < const.res.lifetime
+changed - func.hm.daily - now calculates lcoh only including investment costs until elc.age < const.elc.lifetime
+changed - func.em.yearly - now calculates lcoe only including investment costs until man.age < const.man.lifetime
+
+v1.6.25.3.25
+changed - setup.nls - const.RES.lifetime now the minimum lifetime for renewables
+changed - setup.nls - const.ELC.lifetime now the minimum lifetime for electrolyzers
+changed - setup.nls - const.MAN.lifetime now the minimum lifetime for manufacturings
+changed - setup-res - RES.lifetime now calculated minimum + random(range), RES.crf now calculated with minimal lifetime
+changed - setup-elc - ELC.lifetime now calculated minimum + random(range), ELC.crf now calculated with minimal lifetime
+changed - setup-man - MAN.lifetime now calculated minimum + random(range), MAN.crf now calculated with minimal lifetime
+changed - func.pm.yearly- calculating profitability now only includes investment costs if RES.age <= minimal lifetime const.RES.lifetime
+changed - func.hm.yearly - calculating profitability now only includes investment costs if ELC.age <= minimal lifetime const.ELC.lifetime
+changed - func.em.yearly - caluclating profitability now only includes investment costs if MAN.age <= minimal lifetime const.MAN.lifetime
+
+v1.6.25.3.18
+changed - func.pm.yearly - clean up of the code, calculates profitability directly
+changed - func.hm.yearly - clean up of the code, calculates profitability directly
+changed - func.em.yearly - clean up of the code, calculates profitability directly
+added - setup-output_files - added "Delta phi max" to data that is written out
+added - write.PP.year - added "Delta phi max" to data that is written out
+added - write.HP.year - added "Delta phi max" to data that is written out
+added - write.EP.year - added "Delta phi max" to data that is written out
+
+v1.6.25.3.17
+changed - func.hm.set_h2_price - now includes the fuel replacement costs
+deleted - func.hm.get_penetration - no penetration for hydrogen demand anymore
+added - class HP.gamma - gives each HP its own target
+changed - func.hm.yearly - now each HP has their own lower limit for their threshold based on their own gamma
+added - class EP.gamma - gives each EP its own target
+changed - func.em.yearly - now each EP has their own lower limit for their threshold based on their own gamma
+changed - HP.gamma - now depends on const.gamma
+changed - EP.gamma - now depends on const.gamma
+
+v1.6.25.3.7
+changed - setup-pp - now randomly starts with a threshold between threshold_0 and 0.1
+changed - setup-hp - now randomly starts with a threshold between threshold_0 and 0.1
+changed - setup-ep - now randomly starts with a threshold between threshold_0 and 0.1
+
+v1.6.25.3.6
+changed - setup-constants - const.RES.lifetime 20 -> 25, const.ELC.lifetime 20 -> 25, const.ELC.new_capacity 10 -> 100, const.MAN.new_capacity 40 -> 400
+changed - func.hm.get_capacity_new - now only increases by 1.25 instead of 2.0, and also rounds
+changed - func.em.get_capacity_new - now only increases by 1.25 instead of 2.0, and also rounds
+
+v1.6.25.02.24
+changed - func.hm.yearly - new way to find a good fit to buy a electrolyzers -> now uses size and price to find a good fit
+fixed - func.pm.get_capacity_new - now doesnt allow for increase when current size is exactly the max
+fixed - func.hm.get_capacity_new - now doesnt allow for increase when current size is exactly the max
+fixed - func.em.get_capacity_new - now doesnt allow for increase when current size is exactly the max
+
+v1.6.25.02.11
+changed - func.em.get_capacity_new - new way to calculate capacity new -> now doubles until it hit max then stays constant
+changed - func.hm.get_capacity_new - new way to calculate capacity new -> now doubles until it hit max then stays constant
+added - HP.weight_price - new value for hydrogen producer to weigh the price in buying decision
+added - HP.weight_size - new value for hydrogen producer to weigh the size in buying decision
+
+v1.5.25.01.13
+added - func.hm.set_h2_price - now limits maximum amount of hydrogen that can be sold (debugging)
+changed - setup-init - init.HM.c_elc_0 1500000 -> 5000000
+
+v1.5.24.12.04
+added - RES.roi - Return of investment on Renewables (Profits - Investment costs)/Investment costs
+added - ELC.roi - Return of investment on Electrolyzers (Profits - Investment costs)/Investment costs
+added - MAN.roi - Return of investment on Manufacturings (Profits - Investment costs)/Investment costs
+changed - func.em.get_barging_factor - now uses total supply and demand for bargining factor
+changed - setup-output_files - now also initiat outfile.RES, outfile.ELC, outfile.MAN with Return on Investment
+changed - write.RES.year - now also writes out RES.roi
+changed - write.ELC.year - now also writes out ELC.roi
+changed - write.MAN.year - now also writes out MAN.roi
+changed - setup-init - init.EM.c_man_0 100000 -> 1000000
+
+v1.5.24.12.03
+changed - setup-constants - const.RES.max_capacity 1000 -> 2000
+changed - func.hm.get_capacity_new - tmp.capacity_max 1000 -> 2000
+changed - func.em.get_capacity_new - tmp.capacity_max 1000 -> 2000
+changed - func.pm.create_pp_new - now starts a new pp with the currently biggest renewable capacity
+changed - func.hm.yearly - now starts a new hp with the currently biggest electrolyzer capacity
+changed - func.em.create_ep_new - now starts a new ep with the currently biggest manufacturing capacity
+
+v1.5.24.11.26
+fixed - func.hm.get_list_buyers - now returns willingness to pay in [€/MW]
+fixed - func.hm.yearly - now uses willingnes to pay in [€/MW] for new HP if all have invested/no HP left
+
+v1.5.24.11.13
+changed - func.pm.yearly - uses the actual profitability to calculate delta phi
+changed - func.hm.yearly - uses the actual profitability to calcualte delta phi
+changed - func.em.yearly - uses the acutal profitability to calcualte delta phi
+added - PP.balance, HP.balance, EP.balance - the balance of cash and actors
+added - PP.list_income_expectation, HP.list_income_expectation, EP.list_income_expectation - list of incomes for expected profitability
+added - PP.list_expense_expectation, HP.list_expense_expectation, EP.list_expense_expectation - list of expenses for expected profitability
+fixed - func.em.yearly - bug net_cashflow didnt include expenses 
+fixed - func.hm.daily - bug that multiply payout with util
+fixed - func.hm.daily - bug that had HP.util calculated wrong
+fixed - func.hm.get_list_buyers - bug in calculation the willingness to pay
+fixed - func.hm.yearly - same bug in caluclation the willingness to pay for new hps
+
+v1.2.24.11.12 
+changed - init.EM.c_man_0 -> 100000
+fixed - func.pm.daily - in case that no electrolyzers exists, set excess electricity price to 0 
+fixed - func.hm.daily - in case that no electrolyzers exists, set util to 0 for exess electricity
+
+v1.2.24.11.08
+fixed - func.em.set_elc_costs - bug that lead to small factories have 0 capacity produces, earned, expeneded
+fixed - func.em.yearly - forget to reste MAN.produciton, MAN.capacity_left, MAN.util
+fixed - func.hm.yearly - didnt update MAN.production_cumulative
+
+v1.2.24.11.04
+debug - setup-init - added to set init.EM.threshold_0 init.HM.threshold_0, to ensure they both start with the same value
+
+v1.2.24.10.30
+fixes - func.pm.get_new_capacity - now uses const.RES.max_capacity_rate instead of fixed value
+
+v1.2.24.10.28
+added - const.PM.p_elc_min - minimal price for electricity when production by RES is bigger then installed cap of ELC
+
+v1.2.24.10.10
+changed - write.hm.year - now also write the global minimum investment threshold
+changed - write.em.year - now also write the global minimum investment threshold
+changed - write.pm.year - now also write the global minimum investment threshold
+
+v1.2.24.8.11
+fixed - func.pm.yearly - when setting weighted price check if production > zero
+
+v1.2.24.8.8
+added - write.CONFIG - function that writes the values from the model into a config file
+changed - func.hm.set_threshold_min - fixed an issue that with ref but negative init.threshold_0 negative values allowed
+changed - func.em.set_threshold_min - fixed an issue that with ref but negative init.threshold_0 negative values allowed
+
+v1.2.24.7.30
+changed - func.hm.set_h2_price - values updated with new data from bcg
+changed - func.pm.get_co2_tax - now take input in [€/t_CO2]
+changed - func.em.set_elc_costs - removed global scaling factor
+fixed -  func.em.get_elc_cost_new - bug that gave a wrong inexperience factor
+
+v1.1.24.7.2
+added - meta.run_path - path for the output
+changed - setup-settings - now includes the loading of the output path
+changed - setup-output_files - now uses meta.run_path for the output files
+changed - setup-constants - now load all parameters for the sensitivity analysis
+
+v1.1.24.6.18
+changed - func.em.set_elc_costs - now respects that its a global market by scaling up the germany to a world wide production and starting with a global produced capacity
+added - const.EM.global_share - share of german production of the globale elc production
+added - init.EM.global_cap_0 - cumulative global produced capacity
+
+v1.0.24.5.8
+changed - func.hm.yearly - removed perfect market calculation
+general - code clean up 
+
+v0.9.24.4.29
+changed - func.hm.set_h2 price - changed values to demand from bcg report and adjustes how the willigness to pay is calculated
+
+v0.9.24.4.11
+changed - func.hm.set_h2 price - changed values and added a time dependencies for the demand
+
+v0.9.24.4.11
+added - Data for costs and carbon intensity
+changed - func.hm.set_h2_price - now based on given demand for processes that can be replaced by hydrogen
+
+v0.9.24.3.15
+fixed - EM.income and EM.expense - resets after each year
+changed - func.em.get_barging_factor - now consider marketshare to calculate factor
+added - .profitability calculations
+changed - .expectation instead of old .profitability
+
+v0.9.24.3.14
+added - write.SALE.year - writes data for all electrolyzer sales
+changed - const.EM.inexperience_penalty_max from 0.5 -> 0.25
+
+v0.9.24.3.13
+fixed - func.em.get_get_list_sellers; now from cheapest to expensive
+added - perfect market for em in func.hm.yearly
+changed - tmp.capacity_max in func.em.get_capacity_new to 1000
+changed - const.MAN.new_capacity to 20
+
+v0.9.24.3.12
+fixed - error in intransparent market in hm.yearly
+fixed - error in new hp if no hp left 
+
+v0.9.24.3.6
+changed - cost for gas to unrealisitc value for debugging
+changed - func.em.get_list_sellers; now returns orded list of manufacturings
+
+v0.9.24.3.5
+changed - function to get list of buyers for electrolyzers
+changed - one-on-one arrangements in intransparent market for em in func.hm.yearly
+
+v0.9.24.3.4
+changed - hydrogen price now based on production of last year
+
+v0.9.24.2.22
+changed - green hydrogen demand 
+changed - efficiency for gas turbine
+changed - efficiency for electrolyzer
+changed - initial cost for electrolyzer
+changed - growth for renewable capacity
+changed - inital renewable capacity
+changed - inital no of PP
+changed - inital no of RES
+changed - cost for factories
+changed - inital no of HP
+changed - inital no of ELC
+changed - inital no of EP
+changed - inital no of MAN

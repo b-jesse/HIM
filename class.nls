@@ -1,0 +1,345 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------ Classes ------------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------- Actors ------------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+breed [ElectrolyzerProducers ElectrolyzerProducer]
+breed [HydrogenProducers HydrogenProducer]
+breed [PowerProducers PowerProducer]
+
+PowerProducers-own [
+  ;; General
+  PP.id ;identifier
+  PP.start_year ;when entered the market [-]
+  PP.delta_threshold_max ;maximal change in threshold [-]
+  PP.investment_time ;int number of periods used for investment [-]
+  
+  ;; Current values
+  PP.alive ;boolean if alive [-]
+  PP.threshold ;float investment threshold [-]
+  PP.roi ;float return on investment [-]
+  PP.roi_target ;float target for roi [-]
+  PP.income ;float income of the pp [€]
+  PP.net_cashflow ;float netto cashflow of the pp [€]
+  PP.specific_cashflow ;float specific netto cashflow [€/MW]
+  PP.profitability ;float total profitability of the pp [-]
+  PP.expectation ;float total performance expectation ratio of pp [-]
+  PP.liquidity ;float liquidity of the pp [€]
+  PP.wallet ; float liquidity for the wallet method of the pp [€]
+  PP.wallet_in ; float income for the wallet method of the pp [€]
+  PP.wallet_out ; float expense for the wallet method of the pp [€]
+  PP.balance ;float balance of cash and assets of the pp [€]
+  PP.marketshare ;float market share [-]
+  PP.invest ;boolean if invest [-]
+  PP.investment_new ;investment costs for new res [€/MW]
+  PP.capacity_installed ;int installed owned capacity [MW]
+  PP.capacity_cumulative ;int cumulative owned capacity [MW]
+  PP.capacity_new ;int capacity for new investment [MW]
+  PP.capacity_added ;int capacity added in this year [MW]
+  PP.util ;float utilization rate [-]
+  PP.production ;float produced amount of power [MWh]
+  PP.production_cumulative ;float cumulative produced amount of power [MWh]
+  PP.lcoe ;float levelized cost of electricity for pp [€/MWh]
+  PP.weighted_price ;float weighted price of electricity for pp [€/MWh]
+  PP.list_assets ;list all active renewables of pp [-]
+  PP.list_income_profitability ;list of income in the last n periods of the pp for the profitabilty [€]
+  PP.list_expense_profitability ;list of expense in the last n periods of the pp for the profitabilty [€]
+  PP.list_income_expectation ;list of income in the last n periods of the pp for the expected profitability [€]
+  PP.list_expense_expectation ;list of expense in the last n periods of the pp for the expected profitability [€] 
+  PP.list_net_cashflow ;list of the net cashflows in the last n periods of the pp for the specific cashflow [€]
+  PP.list_capacity_installed ;list of the installed owned capacity in the last n periods of the pp for the specific cashflow [MW]
+  
+  ;; Tracking values
+  PP.track.threshold
+  PP.track.income
+  PP.track.net_cashflow
+  PP.track.profitability
+  PP.track.marketshare
+  PP.track.invest
+  PP.track.liquidity
+  PP.track.capacity_installed
+  PP.track.capacity_cumulative
+  PP.track.capacity_new
+  PP.track.util
+  PP.track.production
+  PP.track.production_cumulative
+  PP.track.specific_cashflow
+  PP.track.lcoe
+  PP.track.weighted_price
+]
+
+HydrogenProducers-own [
+  ;; General
+  HP.id ;identifier
+  HP.start_year ;when entered the market [-]
+  HP.delta_threshold_max ;maximal change in threshold [-]
+  HP.investment_time ;int number of periods used for investment [-]
+  HP.weight_price ;int weight for price in decision [-]
+  HP.weight_size ;int weight for size in decision [-]
+  HP.gamma ;float percentage for governmental target [-]
+  
+  ;; Current values
+  HP.alive ;boolean if alive [-]
+  HP.threshold ;float investment threshold [-]
+  HP.roi ;float return on investment [-]
+  HP.roi_target ;float target for roi [-]
+  HP.income ;float income of the hp [€]
+  HP.expense ;float expense of the hp [€]
+  HP.net_cashflow ;float netto cashflow of the hp [€]
+  HP.specific_cashflow ;float specific netto cashflow [€/MW]
+  HP.liquidity ;float liquidity of the hp [€]
+  HP.wallet ; float liquidity for the wallet method of the hp [€]
+  HP.wallet_in ; float income for the wallet method of the hp [€]
+  HP.wallet_out ; float expense for the wallet method of the hp [€]
+  HP.balance ;float balance of cash and assests of the hp [€]
+  HP.profitability ;float total profitability of the hp [-]
+  HP.expectation ;float total performance expectation ratio of hp [-]
+  HP.marketshare ;float market share [-]
+  HP.invest ;boolean if invest [-]
+  HP.capacity_installed ;int installed owned capacity [MW]
+  HP.capacity_cumulative ;int cumulative owned capacity [MW]
+  HP.capacity_new ;int capacity for new investment [MW]
+  HP.capacity_added ;int capacity added in this year [MW]
+  HP.w2p ;int willingness to pay for new investment [€/MW]
+  HP.util ;float utilization rate [-]
+  HP.production ;float production amount of hydrogen [MWh]
+  HP.production_cumulative ;float cumulative production amount of hydrogen [MWh]
+  HP.lcoh ;float levelized cost of hydrogen for hp [€/MWh]
+  HP.list_assets ;list all active electrolyzers of hp [-]
+  HP.list_income_profitability ;list of income in the last n periods of the hp for the profitabilty [€]
+  HP.list_expense_profitability ;list of income in the last n periods of the hp for the profitabilty [€]
+  HP.list_income_expectation ;list of income in the last n periods of the hp for the expected profitability [€]
+  HP.list_expense_expectation ;list of expense in the last n periods of the hp for the expected profitability [€]
+  HP.list_net_cashflow ;list net cashflows in the last n periods of the hp [€]
+  HP.list_capacity_installed ;list of the installed owned capacity in the last n periods of the hp for the specific cashflow [MW]
+  
+  ;; Tracking values
+  HP.track.threshold
+  HP.track.income
+  HP.track.expense
+  HP.track.net_cashflow
+  HP.track.profitability
+  HP.track.marketshare
+  HP.track.invest
+  HP.track.liquidity
+  HP.track.capacity_installed
+  HP.track.capacity_cumulative
+  HP.track.capacity_new
+  HP.track.util
+  HP.track.production
+  HP.track.production_cumulative
+  HP.track.specific_cashflow
+  HP.track.lcoh
+]
+  
+ElectrolyzerProducers-own [
+  ;; General
+  EP.id ;identifier
+  EP.start_year ;when entered the market [-]
+  EP.delta_threshold_max ;maximal change in threshold [-]
+  EP.investment_time ;int number of periods used for investment [-]
+  EP.gamma ;float percentage of govermental target [-]
+  
+  ;; Current values
+  EP.alive ;boolean if alive [-]
+  EP.threshold ;float investment threshold [-]
+  EP.roi ;float return on investment [-]
+  EP.roi_target ;float target for ROI [-]
+  EP.income ;float income of the ep [€]
+  EP.expense ;float expense of the ep [€]
+  EP.net_cashflow ;float netto cashflow of the ep [€]
+  EP.specific_cashflow ;float specific netto cashflow [€/MW/year]
+  EP.liquidity ;float liquidity of the ep [€]
+  EP.balance ;float balance of cash and assets of the ep [€]
+  EP.wallet ; float liquidity for the wallet method of the ep [€]
+  EP.wallet_in ; float income for the wallet method of the ep [€]
+  EP.wallet_out ; float expense for the wallet method of the ep [€]
+  EP.profitability ;float total profitability of the ep [-]
+  EP.expectation ;float total performance expectation ratio of ep [-]
+  EP.marketshare ;float market share [-]
+  EP.invest ;boolean if invest [-]
+  EP.investment_new ;investment cost for new man [€/MW/year]
+  EP.costs ;float minimal costs for electrolyzer production [€/MW]
+  EP.capacity_installed ;int installed owned capacity [MW/year]
+  EP.capacity_cumulative ;int cumulative owned capacity [MW/year]
+  EP.capacity_left ;int capacity left for production [MW]
+  EP.capacity_new ;int capacity for new investment [MW/year]
+  EP.capacity_added ;int capacity added in this year [MW/year]
+  EP.util ;float utilization rate [-]
+  EP.production ;int production of electrolyzers [MW]
+  EP.production_cumulative ;int cumulative production of electrolyzers [MW]
+  EP.lcoe ;float levelized coast of electrolyzers for ep [€/MW]
+  EP.list_income ;list of incomes [€]
+  EP.list_expense ;list of expenses [€]
+  EP.list_income_profitability ;list of income in the last n periods of the ep for the profitabilty [€]
+  EP.list_expense_profitability ;list of income in the last n periods of the ep for the profitabilty [€]
+  EP.list_income_expectation ;list of income in the last n periods of the ep for the expected profitability [€]
+  EP.list_expense_expectation ;list of expense in the last n periods of the ep for the expected profitability [€]
+  EP.list_assets ;list all active manufacturings of ep [-]
+  EP.list_net_cashflow ;list net cashflows in the last n periods of the ep [€]
+  EP.list_capacity_installed ;list of the installed owned capacity in the last n periods of the ep for the specific cashflow [MW/year]
+  
+  ;; Tracking values
+  EP.track.threshold
+  EP.track.income
+  EP.track.expense
+  EP.track.net_cashflow
+  EP.track.profitability
+  EP.track.marketshare
+  EP.track.invest
+  EP.track.liquidity
+  EP.track.costs
+  EP.track.capacity_installed
+  EP.track.capacity_cumulative
+  EP.track.capacity_left
+  EP.track.capacity_new
+  EP.track.util
+  EP.track.production
+  EP.track.production_cumulative
+  EP.track.specific_cashflow
+  EP.track.lcoe
+]
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------- Assets ------------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+breed [Manufacturings Manufacturing]
+breed [Electrolyzers Electrolyzer]
+breed [Renewables Renewable]
+
+Renewables-own [
+  ;; General
+  RES.id ;identifier
+  RES.owner ;id of owner 
+  RES.crf ;capital recovery factor [-]
+  RES.start_year ;when entered the market [-]
+  RES.investment ;investment cost of the renewable [€]
+  RES.investment_time ;int number of periods used for investment [-]
+  RES.threshold ;threshold at time of investment [-]
+  RES.capacity ;capacity [MW]
+  RES.lifetime ;lifetime [years]
+  
+  ;; Current values
+  RES.age ;int age of the renewable [-]
+  RES.profitability ;float profitability of the res [-]
+  RES.expectation ;float performance expectation ratio of the res [-]
+  RES.income ;float income of the res [€]
+  RES.lcoe ;float levelized cost of electricity [€/MWh]
+  RES.liquidity ;float liquidity of the res [€]
+  RES.production ;float amount of power produced [MWh]
+  RES.production_cumulative ;float cumulative amount of power produced [MWh]
+  RES.util ;float utilization of the res [-]
+  RES.roi ;float return on investment [-]
+  RES.list_util ;list of utilization rate [-]
+  RES.list_produced ;list of production [MWh]
+  RES.list_income ;list of income [€]
+  RES.list_income_profitability ;list of income in the last n periods of the res for the profitabilty [€]
+  RES.list_expense_profitability ;list of expense in the last n periods of the res for the profitabilty [€]
+  RES.list_income_expectation ;list of income in the last n periods of the res for the expected profitabilty [€]
+  RES.list_expense_expectation ;list of expense in the last n periods of the res for the expected profitabilty [€]
+  
+  ;; Tracking values
+  RES.track.age
+  RES.track.profitability
+  RES.track.income
+  RES.track.lcoe
+  RES.track.liquidity
+  RES.track.production
+  RES.track.production_cumulative
+  RES.track.util
+]
+  
+Electrolyzers-own [
+  ;; General
+  ELC.id ;identifier
+  ELC.owner ;id of owner
+  ELC.crf ;capital recovery factor [-]
+  ELC.start_year ;when entered the market [-]
+  ELC.investment ;investment cost of the electrolyzer [€]
+  ELC.investment_time ;int number of periods used for investment [-]
+  ELC.threshold ;threshold at time of investment [-]
+  ELC.capacity ;capacity [MW]
+  ELC.lifetime ;lifetime [years]
+  
+  ;; Current values
+  ELC.age ;int age of electrolyzer [-]
+  ELC.profitability ;float profitability of the elc [-]
+  ELC.expectation ;float performance expectation ratio of the elc [-]
+  ELC.income ;float income of the elc [€]
+  ELC.expense ;float expense of the elc [€]
+  ELC.lcoh ;float levelized cost of hydrogen [€/MWh]
+  ELC.liquidity ;float liquidity of the elc [€]
+  ELC.production ;float amount of hydrogen produced [MWh]
+  ELC.production_cumulative ;float cumulative amount of hydrogen produced [MWh]
+  ELC.util ;float utilization of the elc [-]
+  ELC.roi ;float return on investment [-]
+  ELC.list_util ;list of utilization rate [-]
+  ELC.list_produced ;list of production [MWh]
+  ELC.list_income ;list of incomes [€]
+  ELC.list_expense ;list of expenses [€]
+  ELC.list_income_profitability ;list of income in the last n periods of the elc for the profitabilty [€]
+  ELC.list_expense_profitability ;list of income in the last n periods of the elc for the profitabilty [€]
+  ELC.list_income_expectation ;list of income in the last n periods of the elc for the expected profitabilty [€]
+  ELC.list_expense_expectation ;list of expense in the last n periods of the elc for the expected profitabilty [€]
+  
+  ;; Tracking values
+  ELC.track.age
+  ELC.track.profitability
+  ELC.track.income
+  ELC.track.expense
+  ELC.track.lcoh
+  ELC.track.liquidity
+  ELC.track.production
+  ELC.track.production_cumulative
+  ELC.track.util
+]
+
+Manufacturings-own [
+  ;; General
+  MAN.id ;identifier
+  MAN.owner ;id of owner
+  MAN.crf ;capital recovery factor [-]
+  MAN.start_year ;when entered the market [-]
+  MAN.investment ;investment cost of the manufacturing [€]
+  MAN.investment_time ;int number of periods used for investment [-]
+  MAN.threshold ;threshold at time of investment [-]
+  MAN.capacity ;capacity [MW/year]
+  MAN.lifetime ;lifetime [years]
+  MAN.costs ;float costs to produce electrolyzer [€/MW]
+  
+  ;; Current values
+  MAN.age ;int age of manufacturing [-]
+  MAN.profitability ;float profitability of the man [-]
+  MAN.expectation ;float performance expectation ratio of the man [-]
+  MAN.income ;float income of the manufacturing [€]
+  MAN.expense ;float expense of manufacturing [€]
+  MAN.lcoe ;float levelized costs of electrolyzers [€/MW]
+  MAN.liquidity ;float liquidity of the man [€]
+  MAN.production ;float amount of electrolyzers produced [MW]
+  MAN.production_cumulative ;float cumulative amount of electrolyzers produced [MW]
+  MAN.capacity_left ;int capacity left to produce electrolyzers [MW]
+  MAN.util ;float utilization rate [-]
+  MAN.roi ;float return on investment [-]
+  MAN.list_produced ;list of production [MW]
+  MAN.list_income ;list of incomes [€]
+  MAN.list_expense ;list of expense [€]
+  MAN.list_income_profitability ;list of income in the last n periods of the man for the profitabilty [€]
+  MAN.list_expense_profitability ;list of income in the last n periods of the man for the profitabilty [€]
+  MAN.list_income_expectation ;list of income in the last n periods of the man for the expected profitabilty [€]
+  MAN.list_expense_expectation ;list of expense in the last n periods of the man for the expected profitabilty [€]
+  
+  ;; Tracking values
+  MAN.track.age
+  MAN.track.profitability
+  MAN.track.income
+  MAN.track.expense
+  MAN.track.lcoe
+  MAN.track.liquidity
+  MAN.track.production
+  MAN.track.production_cumulative
+  MAN.track.capacity_left
+  MAN.track.util
+]
+  

@@ -1,0 +1,1209 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------- Setup -------------------------------------------------- ;
+; Order of setup is:                                                                                         ;
+; 1. setup-meta - setting all meta.values (done in main.nlogo)                                               ;
+; 2. setup - setting everything else                                                                         ;
+; 2.1 setup-settings - setting the settings for the current run                                              ;
+; 2.2 setup-scenario - setting all boolean for the current scenario                                          ;
+; 2.3 setup-files - setting up all files                                                                     ;
+; 2.3.1 setup-input - setting all input files                                                                ;
+; 2.3.2. setup-output - setting up all output files (optional)                                               ;
+; 2.4 setup-constants - setting all constant values (optional: use sensitivity values)                       ;
+; 2.5 setup-init - setting all start values (optional: use sensitivity values)                               ;
+; 2.6 setup-world - setting up the model world (optinal: use sensitivity values)                             ;
+; 2.6.1 setup-government - setting the subsidy values (optional: use sensitivity values)                     ;
+; 2.6.2 setup-pm - setting up the power market                                                               ;
+; 2.6.2.1 setup-res - setting up the renewables                                                              ;
+; 2.6.2.2 setup-pp - seeting up the power producers                                                          ;
+; 2.6.3 setup-hm - setting up the hydrogen market                                                            ;
+; 2.6.3.1 setup-elc - setting up the electrolyzers                                                           ;
+; 2.6.3.2 setup-hp - setting up the hydrogen producers                                                       ;
+; 2.6.4 setup-em - setting up the electrolyzer market                                                        ;
+; 2.6.4.1 setup-man - setting up the manufacturing capacities                                                ;
+; 2.6.4.2 setup-ep - setting up the electrolyzer producers                                                   ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------------- Setup -------------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- 2.1 setup-settings ------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-settings []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; This function will either load a model.config file or will
+  ;; set the settings to default values
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+  ;; Set default values
+  set settings.debug false
+  set settings.track false
+  set settings.plot false
+  set settings.write false
+  set settings.seperator ";"
+
+  ;; Model.config file
+  ifelse meta.run_no = 0 and empty? meta.run [
+    set meta.config "model.config"
+  ][ 
+    set meta.config word meta.run_path "model.config"
+  ]
+    
+  ;; Try to load config file
+  (ifelse
+    not empty? meta.config and file-exists? meta.config [
+      file-open meta.config
+      while [not file-at-end?] [
+        let tmp.line file-read-line
+        (ifelse
+          member? "debug" tmp.line [
+            set settings.debug (member? "True" tmp.line)
+          ]
+          member? "track" tmp.line [
+            set settings.track (member? "True" tmp.line)
+          ]
+          member? "plot" tmp.line [
+            set settings.plot (member? "True" tmp.line)
+          ]
+          member? "write" tmp.line [
+            set settings.write (member? "True" tmp.line)
+          ]
+          member? "run_no:" tmp.line and meta.run_no = 0 [
+            set meta.run_no read-from-string substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)
+          ]
+          member? "run:" tmp.line and empty? meta.run [            
+            set meta.run remove " " substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)
+          ]
+          member? "run_path:" tmp.line and empty? meta.run_path [
+            set meta.run_path remove " " substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)
+          ]
+        )
+      ]
+      file-close
+    ][
+      print "Error 201: File not found in setup-settings"
+      print "Caution - Will use default values"
+    ]
+  )
+    
+  ;; Set random seed for debuging and testing
+  if settings.debug [
+    print "Warning: Set random seed" 
+    random-seed 123456
+  ]
+  
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- 2.2 setup-scenario ------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-scenario []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setups the scenario for this calculation
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+  ;; Set default values
+  set scenario.ref true
+  set scenario.co2_tax false
+  set scenario.h2_subsidy false
+  set scenario.h2_guarant false
+  set scenario.res_subsidy false
+  set scenario.power_subsidy false
+  set scenario.power_guarant false
+  set scenario.elc_subsidy false
+  set scenario.elc_guarant false
+  set scenario.man_subsidy false
+  set scenario.time_lag false
+  
+  ;; Try to load config file
+  ifelse not empty? meta.config and file-exists? meta.config [
+    file-open meta.config
+    while [not file-at-end?] [
+      let tmp.line file-read-line
+      (ifelse
+        member? "ref" tmp.line [
+          set scenario.ref (member? "True" tmp.line)
+        ]
+        member? "co2_tax" tmp.line [
+          set scenario.co2_tax (member? "True" tmp.line)
+        ]
+        member? "h2_subsidy" tmp.line [
+          set scenario.h2_subsidy (member? "True" tmp.line)
+        ]
+        member? "h2_guarant" tmp.line [
+          set scenario.h2_guarant (member? "True" tmp.line)
+        ]
+        member? "res_subsidy" tmp.line [
+          set scenario.res_subsidy (member? "True" tmp.line)
+        ]
+        member? "power_subsidy" tmp.line [
+          set scenario.power_subsidy (member? "True" tmp.line)
+        ]
+        member? "power_guarant" tmp.line [
+          set scenario.power_guarant (member? "True" tmp.line)
+        ]
+        member? "elc_subsidy" tmp.line [
+          set scenario.elc_subsidy (member? "True" tmp.line)
+        ]
+        member? "elc_guarant" tmp.line [
+          set scenario.elc_guarant (member? "True" tmp.line)
+        ]
+        member? "man_subsidy" tmp.line [
+          set scenario.man_subsidy (member? "True" tmp.line)
+        ]
+        member? "time_lag" tmp.line [
+          (ifelse 
+            member? "False" tmp.line [
+              set scenario.time_lag false
+            ][
+              set scenario.time_lag read-from-string (last tmp.line)
+            ]
+          )
+        ]
+       )
+    ]
+    file-close
+  ][
+    print "Error 202: File not found in setup-scenario"
+    print "Caution - Will use default values"
+  ] 
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; -------------------------------------------- 2.3 setup-files --------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-files []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set path to all files needed and set up output files if needed
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Input files
+  setup-input_files
+  
+  ;; Output files (optional)
+  if settings.write [
+    setup-output_files
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ---------------------------------------- 2.3.1 setup-input_files ----------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-input_files []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set input files needed
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; Power market
+  set infile.PM.ts_demand_daily "/01_Data/pm_ts_demand_daily.csv"
+  set infile.PM.ts_demand_yearly "/01_Data/pm_ts_demand_yearly.csv"
+  set infile.PM.ts_co2_yearly "/01_Data/pm_ts_co2_yearly.csv"
+  set infile.HM.h2_demand "/01_Data/hm_h2_demand.csv"
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------- 2.3.1 setup-output_files ----------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-output_files []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the output files if needed
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;; Check if a output folder exists
+  let tmp.out_dir meta.run_path
+  if not file-exists? tmp.out_dir [
+    print "CRITICAL ERROR: OUTFOLDER DOES NOT EXISTS. MODEL STOPS NOW!"
+    stop
+  ]
+  
+  ;; Power market
+  set outfile.PM.year word tmp.out_dir "/pm_year.csv"
+  set outfile.PM.day word tmp.out_dir "/pm_day.csv"
+  set outfile.PP.year word tmp.out_dir "/pp_year.csv"
+  set outfile.RES.year word tmp.out_dir "/res_year.csv"
+  
+  ;; Hydrogen market
+  set outfile.HM.year word tmp.out_dir "/hm_year.csv"
+  set outfile.HM.day word tmp.out_dir "/hm_day.csv"
+  set outfile.HP.year word tmp.out_dir "/hp_year.csv"
+  set outfile.ELC.year word tmp.out_dir "/elc_year.csv"
+  
+  ;; Electrolyzer market
+  set outfile.EM.year word tmp.out_dir "/em_year.csv"
+  set outfile.EP.year word tmp.out_dir "/ep_year.csv"
+  set outfile.MAN.year word tmp.out_dir "/man_year.csv"
+  set outfile.SALE.year word tmp.out_dir "/sale_year.csv"
+
+  ;; Settings
+  set outfile.CONFIG word tmp.out_dir "/run.config"
+  
+  ;; Create daily files
+  ;; Check if file exisits
+  let tmp.file_list (list outfile.PM.year outfile.PM.day outfile.PP.year outfile.RES.year outfile.HM.year outfile.HM.day outfile.HP.year outfile.ELC.year outfile.EM.year outfile.EP.year outfile.MAN.year outfile.SALE.year outfile.CONFIG)
+  if func.check_any_file_exists tmp.file_list [
+    ifelse settings.debug [
+      ;; Debugging - overwriting files
+      print "CRITICAL WARNING: OUTFILE ALREADY EXISTS. WILL OVERWRITE FILES NOW!"
+      foreach tmp.file_list [
+        tmp.file -> 
+        if file-exists? tmp.file [
+          file-delete tmp.file
+        ]
+      ]
+    ][
+      ;; Stop model
+      print "CRITICAL ERROR: OUTFILES ALREADY EXISTS. MODEL STOPS NOW!"
+      stop
+    ]
+  ]
+  
+  ;; Power market
+  write.line outfile.PM.year ["Year" ";" "No. of Powerproducers" ";" "No. of Powerproducers from start" ";" "No. of Renewables" ";" "No. of Renewables from start" ";" "No. of Investments PM" ";" "Installed capacity Renewables" ";" "Cumulative installed capacity Renewables" ";" "Added capacity Renewables" ";" "Weighted Price Electricity" ";" "LCOE" ";" "Global investment threshold" ";" "Cost share"]
+  write.line outfile.PM.day ["Year" ";" "Day" ";" "Price Electricity" ";" "Payout Electricity" ";" "Maximum production renewables" ";" "Actual production renewables" ";" "Electricity demand total" ";" "Electricity demand electrolyzers" ";" "Electricity demand others" ";" "Share of renewables" ";" "Curtailment of renewables"]
+  write.line outfile.PP.year ["Year" ";" "ID" ";" "Investment threshold" ";" "Income" ";" "Net cashflow" ";" "Profitability" ";" "Expectation ratio" ";" "Market share" ";" "Liquidity" ";" "Installed capacity Renewables" ";" "Cumulative installed capacity Renewables" ";" "Added capacity Renewables" ";" "Utilization rate" ";" "Production" ";" "Cumulative Production" ";" "specific cashflow" ";" "LCOE" ";" "Weighted price Electricity" ";" "Delta phi max" ";" "Return on Investment" ";" "Wallet" ";" "Wallet in" ";" "Wallet out"]
+  write.line outfile.RES.year ["Year" ";" "ID" ";" "Owner" ";" "Age" ";" "Income" ";" "Profitability" ";" "Expectation ratio" ";" "Liquidity" ";" "Utilization rate" ";" "Production" ";" "Production cumulative" ";" "LCOE" ";" "Capacity" ";" "Return on Investment"]
+
+  ;; Hydrogen market
+  write.line outfile.HM.year ["Year" ";" "No. of Hydrogenproducers" ";" "No. of Hydrogenproducers from start" ";" "No. of Electrolyzers" ";" "No. of Electrolyzers from start" ";" "No. of Investments HM" ";" "Installed capacity Electrolyzers" ";" "Cumulative installed capacity Electrolyzers" ";" "Added capacity Electrolyzers" ";" "Price Hydrogen" ";" "Payout Hydrogen" ";" "LCOH" ";" "Global investment threshold" ]
+  write.line outfile.HM.day ["Year" ";" "Day" ";" "Payout Hydrogen" ";" "Expense Hydrogen" ";" "Utilization rate" ";" "Actual production electrolyzers"]
+  write.line outfile.HP.year ["Year" ";" "ID" ";" "Investment threshold" ";" "Income" ";" "Expense" ";" "Net cashflow" ";" "Profitability" ";" "Expectation ratio" ";" "Market share" ";" "Liquidity" ";" "Installed capacity Electrolyzers" ";" "Cumulative installed capacity Electrolyzers" ";" "Added capacity Electrolyzers" ";" "Utilization rate" ";" "Production" ";" "Cumulative Production" ";" "specific cashflow" ";" "LCOH" ";" "Willingness to pay" ";" "Delta phi max" ";" "Return on Investment" ";" "Wallet" ";" "Wallet in" ";" "Wallet out"]
+  write.line outfile.ELC.year ["Year" ";" "ID" ";" "Owner"  ";" "Age" ";" "Income" ";" "Expense" ";" "Net cashflow" ";" "Profitability" ";" "Expectation ratio" ";" "Liquidity" ";" "Utilization rate" ";" "Production" ";" "Production cumulative" ";" "LCOH" ";" "Capacity" ";" "Return on Investment"]
+    
+  ;; Electrolyzer market
+  write.line outfile.EM.year ["Year" ";" "No. of Electrolyzerproducers" ";" "No. of Electrolyzerproducers from start" ";" "No. of Manufacturings" ";" "No. of Manufacturings from start" ";" "No. of Investments EM" ";" "Installed capacity Manufacturings" ";" "Cumulative installed capacity Manufacturings" ";" "Added capacity Manufacturings" ";" "Actual minimal costs Electrolyzers" ";" "Minimal costs Electrolyzers" ";" "LCOE" ";" "Global investment threshold" ]
+  write.line outfile.EP.year ["Year" ";" "ID" ";" "Investment threshold" ";" "Income" ";" "Expense" ";" "Net cashflow" ";" "Profitability" ";" "Expectation ratio" ";" "Market share" ";" "Liquidity" ";" "Minimal costs Electrolyzers" ";" "Installed capacity Manufacturings" ";" "Cumulative installed capacity Manufacturings" ";" "Added capacity Manufacturings" ";" "Utilization rate" ";" "Production" ";" "Cumulative Production" ";" "specific cashflow" ";" "LCOE" ";" "Delta phi max" ";" "Return on Investment" ";" "Wallet" ";" "Wallet in" ";" "Wallet out"]
+  write.line outfile.MAN.year ["Year" ";" "ID" ";" "Owner" ";" "Age" ";" "Income" ";" "Expense" ";" "Net cashflow" ";" "Profitability" ";" "Expectation ratio" ";" "Liquidity" ";" "Utilization rate" ";" "Production" ";" "Production cumulative" ";" "LCOE" ";" "Capacity" ";" "Costs" ";" "Return on Investment"]
+  write.line outfile.SALE.year ["Year" ";" "HP ID" ";" "EP ID" ";" "Willinges to pay" ";" "Production costs" ";" "Price" ";" "Payout" ";" "Capacity"]
+  
+  ;; Config file
+  write.line outfile.CONFIG ["##### CONFIG FILE #####"]
+  
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ----------------------------------------- 2.4 setup-constants -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-constants []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setvalues for all constants
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ; Global
+  set const.discount_rate 0.05
+  set const.eta_gas_turbine 0.5
+  set const.eta_electrolyzer 0.7
+  set const.eta_steam_reforming 0.7
+  
+  ; Carbon intensity
+  set const.gas_co2 0.202
+  set const.coal_co2 0.341
+  set const.oil_co2 0.257
+
+  ; Function adjustment parameters
+  ; No use for alpha, delta and epsilon so far
+  set const.alpha 1
+  set const.beta 1
+  set const.gamma 1
+  set const.delta 1
+  set const.epsilon 1
+
+  ; Power market
+  set const.PM.delta_threshold 0.1
+  set const.PM.investment_time 1
+  set const.PM.p_elc_min 0
+  set const.RES.lifetime 20
+  set const.RES.lifetime_range 5
+  set const.RES.new_capacity 1000
+  set const.RES.max_capacity 2000
+  set const.RES.max_capacity_rate 100
+
+  ; Hydrogen market
+  set const.HM.delta_threshold 0.1
+  set const.HM.investment_time 1
+  set const.ELC.lifetime 15
+  set const.ELC.lifetime_range 10
+  set const.ELC.target_capacity 10000
+  set const.ELC.new_capacity 25
+
+  ; Electrolyzer market
+  set const.EM.delta_threshold 0.1
+  set const.EM.investment_time 1
+  set const.EM.inexperience_penalty_max 0.25
+  set const.EM.global_share 0.1
+  set const.MAN.lifetime 20
+  set const.MAN.lifetime_range 5
+  set const.MAN.target_capacity 10000
+  set const.MAN.new_capacity 250
+  set const.MAN.learning_rate 0.16
+  
+  ; Update values for sensitivity analysis
+  ;; Try to load config file
+  (ifelse
+    not empty? meta.config and file-exists? meta.config [
+      file-open meta.config
+      while [not file-at-end?] [
+        let tmp.line file-read-line
+        if member? "const" tmp.line or member? "init" tmp.line or member? "GOV" tmp.line [
+          run (word "set " (substring tmp.line 0 (position ":" tmp.line)) " " (read-from-string substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)))
+          ]
+      ]
+      file-close
+    ][
+      print "Warning 201: No sensitivity data found in setup-constants"
+      print "Caution - Will use default values"
+    ]
+  )
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- 2.5 setup-init ----------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-init []  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup all starting values for the model
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the initial values for the power market
+  set init.PM.no_pp_0 27
+  set init.PM.no_res_0 150
+  set init.PM.c_gas_0 33 ;[€/MWh]
+  set init.PM.c_coal_0 12.0 ;[€/MWh]
+  set init.PM.c_oil_0 61.52 ;[€/MWh]
+  set init.PM.c_res_0 1000000 ;[€/MW]
+  
+  ;; Set the initial values for the hydrogen market
+  set init.HM.no_hp_0 6
+  set init.HM.no_elc_0 6
+  set init.HM.c_elc_0 5000000 ;[€/MW]
+  ifelse scenario.ref [
+    set init.HM.threshold_0 0
+  ][
+    set init.HM.threshold_0 -0.9
+  ]
+  
+  ;; Set the initial values for the electrolyzer market
+  set init.EM.no_ep_0 2
+  set init.EM.no_man_0 2
+  set init.EM.c_man_0 500000 ;[€/(MW/year)]
+  set init.EM.global_cap_0 4000 ;[MW]
+  ifelse scenario.ref [
+    set init.EM.threshold_0 0
+  ][
+    set init.EM.threshold_0 -0.9
+  ]
+  
+  ;; Update values for sensitivity analysis
+  ;; Try to load config file
+  (ifelse
+    not empty? meta.config and file-exists? meta.config [
+      file-open meta.config
+      while [not file-at-end?] [
+        let tmp.line file-read-line
+        if member? "init" tmp.line [
+          run (word "set " (substring tmp.line 0 (position ":" tmp.line)) " " (read-from-string substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)))
+          ]
+      ]
+      file-close
+    ][
+      print "Warning 202: No sensitivity data found in setup-init"
+      print "Caution - Will use default values"
+    ]
+  )
+  
+  ;; DEBUG set init.XX.threshold_0 equal
+  set init.EM.threshold_0 init.HM.threshold_0
+  
+  
+  ;; Overwrite init.XX.threshold_0 if ref to ensure init.XX.threshold_0 of 0
+  if scenario.ref [
+    set init.HM.threshold_0 0
+    set init.EM.threshold_0 0
+  ]
+  
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------------- 2.6 setup-world -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-world []  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the world to start the simulation
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Set the black box
+  set-patch-size 10
+  resize-world -20 20 -20 20
+  
+  ;; Government
+  setup-government
+  
+  ;; Power market
+  setup-pm
+  
+  ;; Hydrogen market
+  setup-hm
+  
+  ;; Electrolzyer market  
+  setup-em
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------ 2.6.1 setup-government ---------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-government []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the government values for subsidies for scenarios
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Government
+  set GOV.h2_subsidy 0.5 ;; extra percentage on the current hydrogen price [%]
+  set GOV.h2_guarant 100 ;; guaranteed price which is payed at least [€/MWh]
+  set GOV.res_subsidy 0.5 ;; percentage of the renewables investment cost covered by the GOV [%]
+  set GOV.power_subsidy 0.5 ;; extra percentage on the current electricity price [%]
+  set GOV.power_guarant 100 ;; guaranteed price which is payed at least [€/MWh]
+  set GOV.elc_subsidy 0.5 ;; percentage of the electrolyzer investment costs covered by the GOV [%]
+  set GOV.elc_guarant 750 ;; guaranteed price for electrolyzer [€/MW]
+  set GOV.man_subsidy 0.5 ;; percentage of the manufacturing cap investment costs covered by the GOV [%]
+  
+  ;; Update values for sensitivity analysis
+  ;; Try to load config file
+  (ifelse
+    not empty? meta.config and file-exists? meta.config [
+      file-open meta.config
+      while [not file-at-end?] [
+        let tmp.line file-read-line
+        if member? "GOV" tmp.line [
+          run (word "set " (substring tmp.line 0 (position ":" tmp.line)) " " (read-from-string substring tmp.line ((position ":" tmp.line) + 1) (length tmp.line)))
+          ]
+      ]
+      file-close
+    ][
+      print "Warning 203: No sensitivity data found in setup-government"
+      print "Caution - Will use default values"
+    ]
+   ) 
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ---------------------------------------------- 2.6.2 setup-pm -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-pm []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the power market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+  ;; Initialize the values for the power market
+  set global.PM.no_pp init.PM.no_pp_0
+  set global.PM.no_res init.PM.no_res_0
+  set global.PM.no_investment 0
+  set global.PM.installed_capacity 0
+  set global.PM.cumulative_capacity 0
+  set global.PM.added_capacity 0
+  set global.PM.threshold_min 0
+  set global.PM.roi_target (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.RES.lifetime)))
+  set global.PM.lcoe 1e10
+  set global.PM.weighted_price 0
+  set global.PM.cost_share 0
+  set global.PM.time_wo_agent 0
+  set global.PM.list_demand []
+  set global.PM.list_util []
+  set global.PM.list_production []
+  set global.PM.list_price []
+  set global.PM.list_payout []
+  set global.PM.list_shares []
+  
+  ;; Initialize the tracking values for the power market
+  set track.PM.no_pp []
+  set track.PM.no_res []
+  set track.PM.no_investment []
+  set track.PM.installed_capacity []
+  set track.PM.cumulative_capacity []
+  set track.PM.added_capacity []
+  set track.PM.threshold_min []
+  set track.PM.lcoe []
+  set track.PM.weighted_price []
+  set track.PM.cost_share []
+  set track.PM.time_wo_agent []
+  set track.PM.list_demand []
+  set track.PM.list_util []
+  set track.PM.list_production []
+  set track.PM.list_price []
+  set track.PM.list_payout []
+  set track.PM.list_shares []
+  
+  ;; Setup the renewables
+  setup-res
+  
+  ;; Setup the power producers
+  setup-pp
+  
+  ;; Update the power market values
+  set global.PM.no_pp count PowerProducers with [PP.alive]
+  set global.PM.no_res count Renewables
+  set global.PM.installed_capacity sum [RES.capacity] of Renewables
+  set global.PM.cumulative_capacity sum [RES.capacity] of Renewables
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; -------------------------------------------- 2.6.2.1 setup-res ------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-res []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the renewables
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create renewables
+  let tmp.id 0
+
+  create-Renewables init.PM.no_res_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 44
+    set heading 180
+    
+    ;; General
+    set RES.id tmp.id ;identifier 
+    set RES.start_year 0 ;when entered the market [-]
+    set RES.capacity const.RES.new_capacity ;capacity [MW]
+    set RES.investment init.PM.c_res_0 * RES.capacity ;investment cost of the renewable [€]
+    set RES.lifetime const.RES.lifetime + random const.RES.lifetime_range ;lifetime [years]
+    set RES.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.RES.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set RES.age random const.RES.lifetime ;int age of the renewable [-]
+    set RES.profitability 0 ;float profitability of the res [-]
+    set RES.expectation 0 ;float performance expectation ratio of the res [-]
+    set RES.roi 0 ;float return on investment [-]
+    set RES.income 0 ;float income of the res [€]
+    set RES.lcoe 1e10 ;float levelized cost of electricity [€/MWh]
+    set RES.liquidity 0 ;float liquidity of the res [€]
+    set RES.production 0 ;float amount of power produced [MWh]
+    set RES.production_cumulative 0 ;float cumulative amount of power produced [MWh]
+    set RES.util 0 ;float utilization of the res [-]
+    set RES.list_util [] ;list of utilization rate [-]
+    set RES.list_produced [] ;list of production [MWh]
+    set RES.list_income [] ;list of income [€]
+    set RES.list_income_profitability [] ;list of income in the last n periods of the man for the profitabilty [€]
+    set RES.list_expense_profitability [] ;list of expense in the last n periods of the res for the profitabilty [€]
+    set RES.list_income_expectation [] ;list of income in the last n periods of the res for the expected profitabilty [€]
+    set RES.list_expense_expectation [] ;list of expense in the last n periods of the res for the expected profitabilty [€]
+    
+    ;; Tracking values
+    set RES.track.age []
+    set RES.track.profitability []
+    set RES.track.income []
+    set RES.track.lcoe []
+    set RES.track.liquidity []
+    set RES.track.production []
+    set RES.track.production_cumulative []
+    set RES.track.util []
+
+    ;; Update tmp.id for next RES
+    set tmp.id (tmp.id + 1)
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; -------------------------------------------- 2.6.2.2 setup-pp -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-pp []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup PowerProducers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create the Power Producers 
+  let tmp.id 0
+  create-PowerProducers init.PM.no_pp_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 45
+    set heading 0
+    
+    ;; General
+    set PP.id tmp.id ;identifier
+    set PP.start_year 0 ;when entered the market [-]
+    set PP.delta_threshold_max random-float const.PM.delta_threshold ;maximal change in threshold [-]
+    set PP.investment_time const.PM.investment_time ;int number of periods used for investment [-]
+    
+    ;; Current values
+    set PP.alive true ;boolean if alive [-]
+    set PP.threshold (0.1 + (random-float (0 - 0.1)) + PP.delta_threshold_max) ;float investment threshold [-]
+    set PP.roi 0 ;float return on investment [-]
+    set PP.roi_target global.PM.roi_target ;float target for ROI [-]
+    set PP.income 0 ;float income of the pp [€]
+    set PP.net_cashflow 0 ;float netto cashflow of the pp [€]
+    set PP.specific_cashflow 0 ;float specific netto cashflow [€/MW]
+    set PP.liquidity 0 ;float liquidity of the pp [€]
+    set PP.wallet 0; float liquidity for the wallet method of the pp [€]
+    set PP.wallet_in 0; float income for the wallet method of the pp [€]
+    set PP.wallet_out 0; float expense for the wallet method of the pp [€]
+    set PP.balance 0 ;float balance of cash and assets of the pp [€]
+    set PP.profitability 0 ;float total profitability of the pp [-]
+    set PP.expectation 0 ;float total performance expectation ratio of the pp [-]
+    set PP.marketshare (1 / init.PM.no_pp_0) ;float market share [-]
+    set PP.invest false ;boolean if invest [-]
+    set PP.investment_new init.PM.c_res_0 ;investment costs for new res [€/MW]
+    set PP.capacity_installed 0 ;int installed owned capacity [MW]
+    set PP.capacity_cumulative 0 ;int cumulative owned capacity [MW]
+    set PP.capacity_new const.RES.new_capacity ;int capacity for new investment [MW]
+    set PP.capacity_added 0 ;int capacity added in this year [MW]
+    set PP.util 0 ;float utilization rate [-]
+    set PP.production 0 ;float produced amount of power [MWh]
+    set PP.production_cumulative 0 ;float cumulative produced amount of power [MWh]
+    set PP.lcoe 1e10 ;float levelized cost of electricity for pp [€/MWh]
+    set PP.weighted_price 1e10 ;float weighted price of electricity for pp [€/MWh]
+    set PP.list_income_profitability [] ;list of income in the last n periods of the pp for the profitabilty [€]
+    set PP.list_expense_profitability [] ;list of income in the last n periods of the pp for the profitabilty [€]
+    set PP.list_income_expectation [] ;list of income in the last n periods of the pp for the expected profitability [€]
+    set PP.list_expense_expectation [] ;list of expense in the last n periods of the pp for the expected profitability [€]
+    set PP.list_net_cashflow [];list of the net cashflows in the last n periods of the pp for the specific cashflow [€]
+    set PP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the pp for the specific cashflow [MW]
+    
+    ;; Tracking values
+    set PP.track.threshold []
+    set PP.track.income []
+    set PP.track.net_cashflow []
+    set PP.track.profitability []
+    set PP.track.marketshare []
+    set PP.track.invest []
+    set PP.track.liquidity []
+    set PP.track.capacity_installed []
+    set PP.track.capacity_cumulative []
+    set PP.track.capacity_new []
+    set PP.track.util []
+    set PP.track.production []
+    set PP.track.production_cumulative []
+    set PP.track.specific_cashflow []
+    set PP.track.lcoe []
+    set PP.track.weighted_price []
+    
+    ;; Update tmp.id
+    set tmp.id (tmp.id + 1)
+  ]
+  
+  ;; Distribute the RES randomly to the PPs
+  ask Renewables [
+    let tmp.owner 0
+    ;; Ensure that every PP gets at least one RES
+    ifelse RES.id < init.PM.no_pp_0 [
+      set tmp.owner RES.id
+    ][
+      set tmp.owner random count PowerProducers with [PP.alive]
+    ]
+    set RES.owner tmp.owner
+    create-link-with one-of PowerProducers with [PP.id = tmp.owner]
+    set RES.threshold (item 0 ([PP.threshold] of PowerProducers with [PP.id = tmp.owner]))
+    set RES.investment_time (item 0 ([PP.investment_time] of PowerProducers with [PP.id = tmp.owner]))
+  ]
+  
+  ;; Line up all PP and RES for a better overview
+  let tmp.PP.xcor 1
+  let tmp.PP.ycor 19
+  ask PowerProducers [
+    setxy tmp.PP.xcor tmp.PP.ycor
+    ask link-neighbors [ setxy (tmp.PP.xcor + 1) tmp.PP.ycor ]
+    set tmp.PP.xcor (tmp.PP.xcor + 3)
+    if tmp.PP.xcor > 17 [
+      set tmp.PP.xcor 1
+      set tmp.PP.ycor (tmp.PP.ycor - 3)
+    ]
+  ]
+  
+  ;; Update PP
+  ask PowerProducers [
+    set tmp.id PP.id
+    set PP.marketshare ((sum [RES.capacity] of Renewables with [RES.owner = tmp.id]) / (sum [RES.capacity] of Renewables))
+    set PP.capacity_installed sum [RES.capacity] of Renewables with [RES.owner = tmp.id] ;int installed owned capacity [MW]
+    set PP.capacity_cumulative sum [RES.capacity] of Renewables with [RES.owner = tmp.id] ;int cumulative owned capacity [MW]
+    set PP.list_assets link-neighbors
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------------- 2.6.3 setup-hm --------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-hm []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the hydrogen market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;; Initialize the values for the hydrogen market
+  set global.HM.no_hp init.HM.no_hp_0
+  set global.HM.no_elc init.HM.no_elc_0
+  set global.HM.no_investment 0
+  set global.HM.price_h2 0
+  set global.HM.payout_h2 0
+  set global.HM.lcoh 1e10
+  set global.HM.installed_capacity 0
+  set global.HM.cumulative_capacity 0
+  set global.HM.threshold_min init.HM.threshold_0
+  set global.HM.roi_target (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime)))
+  set global.HM.time_wo_agent 0
+  set global.HM.list_util []
+  set global.HM.list_production []
+  set global.HM.list_income []
+  set global.HM.list_expense []
+  
+  ;; Initialize the tracking values for the hydrogen market
+  set track.HM.no_hp []
+  set track.HM.no_elc []
+  set track.HM.no_investment []
+  set track.HM.demand_h2 []
+  set track.HM.price_h2 []
+  set track.HM.payout_h2 []
+  set track.HM.lcoh []
+  set track.HM.installed_capacity []
+  set track.HM.cumulative_capacity []
+  set track.HM.added_capacity []
+  set track.HM.threshold_min []
+  set track.HM.time_wo_agent []
+  
+  ;; Setup the electrolyzers
+  setup-elc
+  
+  ;; Setup the hydrogen producers
+  setup-hp
+  
+  ;; Update the hydrogen market values
+  set global.HM.no_hp count HydrogenProducers with [HP.alive]
+  set global.HM.no_elc count Electrolyzers
+  set global.HM.installed_capacity sum [ELC.capacity] of Electrolyzers
+  set global.HM.cumulative_capacity sum [ELC.capacity] of Electrolyzers
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- 2.6.3.1 setup-elc -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-elc []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the electrolyzers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;; Create electrolyzers
+  let tmp.id 0
+  
+  create-Electrolyzers init.HM.no_elc_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 95
+    set heading 180
+    
+    ;; General
+    set ELC.id tmp.id ;identifier
+    set ELC.start_year 0 ;when entered the market [-]
+    set ELC.capacity const.ELC.new_capacity ;capacity [MW]
+    set ELC.investment init.HM.c_elc_0 * const.ELC.new_capacity ;investment cost of the electrolyzer [€]
+    set ELC.lifetime const.ELC.lifetime + random const.ELC.lifetime_range ;lifetime [years]
+    set ELC.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.ELC.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set ELC.age random const.ELC.lifetime ;int age of electrolyzer [-]
+    set ELC.profitability 0 ;float profitability of the elc [-]
+    set ELC.expectation 0 ;float performance expectation ratio of the elc [-]
+    set ELC.roi 0 ;float return on investment [-]
+    set ELC.income 0 ;float income of the elc [€]
+    set ELC.expense 0 ;float expense of the elc [€]
+    set ELC.lcoh 1e10 ;float levelized cost of hydrogen [€/MWh]
+    set ELC.liquidity 0 ;float liquidity of the elc [€]
+    set ELC.production 0 ;float amount of hydrogen produced [MWh]
+    set ELC.production_cumulative 0 ;float cumulative amount of hydrogen produced [MWh]
+    set ELC.util 0 ;float utilization of the elc [-]
+    set ELC.list_util [] ;list of utilization rate [-]
+    set ELC.list_produced [] ;list of production [MWh]
+    set ELC.list_income [] ;list of incomes [€]
+    set ELC.list_expense [];list of expenses [€]
+    set ELC.list_income_profitability [] ;list of income in the last n periods of the elc for the profitabilty [€]
+    set ELC.list_expense_profitability [] ;list of income in the last n periods of the elc for the profitabilty [€]
+    set ELC.list_income_expectation [] ;list of income in the last n periods of the elc for the expected profitabilty [€]
+    set ELC.list_expense_expectation [] ;list of expense in the last n periods of the elc for the expected profitabilty [€]
+    
+    ;; Tracking values
+    set ELC.track.age []
+    set ELC.track.profitability []
+    set ELC.track.income []
+    set ELC.track.expense []
+    set ELC.track.lcoh []
+    set ELC.track.liquidity []
+    set ELC.track.production []
+    set ELC.track.production_cumulative []
+    set ELC.track.util []
+    
+    ;; Update tmp.id
+    set tmp.id (tmp.id + 1)
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- 2.6.3.2 setup-hp --------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-hp []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the hydrogen prodcuers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;; Create hydrogen producers
+  let tmp.id 0
+  
+  create-HydrogenProducers init.HM.no_hp_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 94
+    set heading 0
+    
+    ;; General
+    set HP.id tmp.id;identifier
+    set HP.start_year 0;when entered the market [-]
+    set HP.delta_threshold_max random-float const.HM.delta_threshold ;maximal change in threshold [-]
+    set HP.investment_time const.HM.investment_time ;int number of periods used for investment [-]
+    set HP.weight_price 0.5
+    set HP.weight_size 0.5
+    set HP.gamma ((random-float 2) * const.gamma)
+    
+    ;; Current values
+    set HP.alive true ;boolean if alive [-]
+    set HP.threshold (0.1 + (random-float(init.HM.threshold_0 - 0.1)) + HP.delta_threshold_max) ;float investment threshold [-]
+    set HP.income 0 ;float income of the hp [€]
+    set HP.expense 0 ;float expense of the hp [€]
+    set HP.net_cashflow 0 ;float netto cashflow of the hp [€]
+    set HP.specific_cashflow 0 ;float specific netto cashflow [€/MW]
+    set HP.liquidity 0 ;float liquidity of the hp [€]
+    set HP.wallet 0; float liquidity for the wallet method of the hp [€]
+    set HP.wallet_in 0; float income for the wallet method of the hp [€]
+    set HP.wallet_out 0; float expense for the wallet method of the hp [€]
+    set HP.balance 0 ;float balance of cash and assets of the hp [€]
+    set HP.profitability 0 ;float total profitability of the hp [-]
+    set HP.expectation 0 ;float total performance expectation ratio of the hp [-]
+    set HP.roi 0 ;float return on investment [-]
+    set HP.roi_target global.HM.roi_target ;float target for ROI [-]
+    set HP.marketshare (1 / init.HM.no_hp_0) ;float market share [-]
+    set HP.invest false ;boolean if invest [-]
+    set HP.capacity_installed 0 ;int installed owned capacity [MW]
+    set HP.capacity_cumulative 0 ;int cumulative owned capacity [MW]
+    set HP.capacity_new const.ELC.new_capacity ;int capacity for new investment [MW]
+    set HP.capacity_added 0 ;int capacity added in this year [MW]
+    set HP.w2p 0 ;int willingness to pay for new investment [€/MW]
+    set HP.util 0 ;float utilization rate [-]
+    set HP.production 0 ;float production amount of hydrogen [MWh]
+    set HP.production_cumulative 0 ;float cumulative production amount of hydrogen [MWh]
+    set HP.lcoh 1e10 ;float levelized cost of hydrogen for hp [€/MWh]
+    set HP.list_income_profitability [] ;list of income in the last n periods of the hp for the profitabilty [€]
+    set HP.list_expense_profitability [] ;list of income in the last n periods of the hp for the profitabilty [€]
+    set HP.list_income_expectation [] ;list of income in the last n periods of the hp for the expected profitability [€]
+    set HP.list_expense_expectation [] ;list of expense in the last n periods of the hp for the expected profitability [€]
+    set HP.list_net_cashflow [];list of the net cashflows in the last n periods of the hp for the specific cashflow [€]
+    set HP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the hp for the specific cashflow [MW]
+    
+    ;; Tracking values
+    set HP.track.threshold []
+    set HP.track.income []
+    set HP.track.expense []
+    set HP.track.net_cashflow []
+    set HP.track.profitability []
+    set HP.track.marketshare []
+    set HP.track.invest []
+    set HP.track.liquidity []
+    set HP.track.capacity_installed []
+    set HP.track.capacity_cumulative []
+    set HP.track.capacity_new []
+    set HP.track.util []
+    set HP.track.production []
+    set HP.track.production_cumulative []
+    set HP.track.specific_cashflow []
+    set HP.track.lcoh []
+    
+    ;; Update tmp.id
+    set tmp.id (tmp.id + 1)
+  ]
+  
+  ;; Distribute the ELC randomly to the HPS
+  ask Electrolyzers [
+    let tmp.owner 0
+    ;; Ensure that every HP gets at leas one ELC
+    ifelse ELC.id < init.HM.no_hp_0 [
+      set tmp.owner ELC.id
+    ][
+      set tmp.owner random count HydrogenProducers
+    ]
+    set ELC.owner tmp.owner
+    create-link-with one-of HydrogenProducers with [HP.id = tmp.owner]
+    set ELC.threshold (item 0 ([HP.threshold] of HydrogenProducers with [HP.id = tmp.owner]))
+    set ELC.investment_time (item 0 ([HP.investment_time] of HydrogenProducers with [HP.id = tmp.owner]))
+  ]
+  
+  ;; Line up all HPs and ELCs for a better overview
+  let tmp.HP.xcor -19
+  let tmp.HP.ycor 19
+  ask HydrogenProducers [
+    setxy tmp.HP.xcor tmp.HP.ycor
+    ask link-neighbors [ setxy (tmp.HP.xcor + 1) tmp.HP.ycor ]
+    set tmp.HP.xcor (tmp.HP.xcor + 3)
+    if tmp.HP.xcor > -3 [
+      set tmp.HP.xcor -19
+      set tmp.HP.ycor (tmp.HP.ycor - 3)
+    ]
+  ] 
+  
+  ;; Update HP
+  ask HydrogenProducers with [HP.alive] [
+    set tmp.id HP.id
+    set HP.marketshare ((sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.id]) / (sum [ELC.capacity] of Electrolyzers))
+    set HP.capacity_installed sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.id]
+    set HP.capacity_cumulative sum [ELC.capacity] of Electrolyzers with [ELC.owner = tmp.id]
+    set HP.list_assets link-neighbors
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ---------------------------------------------- 2.6.4 setup-em -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-em []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the electrolyzer market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Initialize the values for the electrolyzer makret
+  set global.EM.no_ep init.EM.no_ep_0
+  set global.EM.no_man init.EM.no_man_0
+  set global.EM.no_investment 0
+  set global.EM.cost_elc init.HM.c_elc_0
+  set global.EM.installed_capacity 0
+  set global.EM.cumulative_capacity 0
+  set global.EM.lcoe 1e10
+  set global.EM.threshold_min init.EM.threshold_0
+  set global.EM.roi_target (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.MAN.lifetime)))
+  set global.EM.time_wo_agent 0
+  
+  ;; Initialize the tracking values for the hydrogen market
+  set track.EM.no_ep []
+  set track.EM.no_man []
+  set track.EM.no_investment []
+  set track.EM.cost_elc []
+  set track.EM.installed_capacity []
+  set track.EM.cumulative_capacity []
+  set track.EM.added_capacity []
+  set track.EM.threshold_min []
+  set track.EM.lcoe []
+  set track.EM.time_wo_agent []
+
+  ;; Setup the manufacturings
+  setup-man
+  
+  ;; Setup the electrolyzer producers
+  setup-ep
+  
+  ;; Update the electroyzer market values
+  set global.EM.no_ep count ElectrolyzerProducers with [EP.alive]
+  set global.EM.no_man count Manufacturings
+  set global.EM.installed_capacity sum [MAN.capacity] of Manufacturings
+  set global.EM.cumulative_capacity sum [MAN.capacity] of Manufacturings
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------------- 2.6.4.1 setup-man ------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-man []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the manufacturings capacities for electrolyzers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create manufacturings
+  let tmp.id 0
+  
+  create-Manufacturings init.EM.no_man_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 63
+    set heading 180
+    
+    ;; General values
+    set MAN.id tmp.id ;identifier
+    set MAN.start_year 0 ;when entered the market [-]
+    set MAN.capacity const.MAN.new_capacity ;capacity [MW/year]
+    set MAN.investment init.EM.c_man_0 * MAN.capacity ;investment cost of the manufacturing [€]
+    set MAN.lifetime const.MAN.lifetime + random const.MAN.lifetime_range ;lifetime [years]
+    set MAN.costs init.HM.c_elc_0 ;float costs to produce electrolyzer [€/MW]
+    set MAN.crf (const.discount_rate / (1 - (1 + const.discount_rate) ^ (-1 * const.MAN.lifetime))) ;capital recovery factor [-]
+    
+    ;; Current values
+    set MAN.age random const.MAN.lifetime ;int age of manufacturing [-]
+    set MAN.profitability 0 ;float profitability of the man [-]
+    set MAN.expectation 0 ;float performance expectation ratio of the man [-]
+    set MAN.roi 0 ;float return on investment [-]
+    set MAN.income 0 ;float income of the manufacturing [€]
+    set MAN.expense 0 ;float expense of manufacturing [€]
+    set MAN.lcoe 1e10 ;float levelized costs of electrolyzers [€/MW]
+    set MAN.liquidity 0 ;float liquidity of the man [€]
+    set MAN.production 0 ;float amount of electrolyzers produced [MW]
+    set MAN.production_cumulative 0 ;float cumulative amount of electrolyzers produced [MW]
+    set MAN.capacity_left MAN.capacity;int capacity left to produce electrolyzers [MW]
+    set MAN.util 0 ;float utilization rate [-]
+    set MAN.list_produced [] ;list of production [MW]
+    set MAN.list_income [] ;list of incomes [€]
+    set MAN.list_expense [] ;list of expense [€]
+    set MAN.list_income_profitability [] ;list of income in the last n periods of the man for the profitabilty [€]
+    set MAN.list_expense_profitability [] ;list of income in the last n periods of the man for the profitabilty [€]
+    set MAN.list_income_expectation [] ;list of income in the last n periods of the man for the expected profitabilty [€]
+    set MAN.list_expense_expectation [] ;list of expense in the last n periods of the man for the expected profitabilty [€]
+    
+    ;; Tracking values
+    set MAN.track.age []
+    set MAN.track.profitability []
+    set MAN.track.income []
+    set MAN.track.expense []
+    set MAN.track.lcoe []
+    set MAN.track.liquidity []
+    set MAN.track.production []
+    set MAN.track.production_cumulative []
+    set MAN.track.capacity_left []
+    set MAN.track.util []
+    
+    ;; Update tmp.id
+    set tmp.id (tmp.id + 1)
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; --------------------------------------------- 2.6.4.1 setup-man ------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to setup-ep []  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup the electrolyzer producers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create Electrolyzer Producers
+  let tmp.id 0
+  
+  create-ElectrolyzerProducers init.EM.no_ep_0 [
+    ;; Default settings
+    setxy 10 10
+    set color 66
+    set heading 0
+    
+    ;; General values
+    set EP.id tmp.id ;identifier
+    set EP.start_year 0 ;when entered the market [-]
+    set EP.delta_threshold_max random-float const.EM.delta_threshold ;maximal change in threshold [-]
+    set EP.investment_time const.EM.investment_time ;int number of periods used for investment [-]
+    set EP.gamma ((random-float 2) * const.gamma)
+    
+    ;; Current values
+    set EP.alive true ;boolean if alive [-]
+    set EP.threshold (0.1 + (random-float(init.EM.threshold_0 - 0.1)) + EP.delta_threshold_max) ;float investment threshold [-]
+    set EP.income 0 ;float income of the ep [€]
+    set EP.expense 0 ;float expense of the ep [€]
+    set EP.net_cashflow 0 ;float netto cashflow of the ep [€]
+    set EP.specific_cashflow 0 ;float specific netto cashflow [€/MW/year]
+    set EP.liquidity 0 ;float liquidity of the ep [€]
+    set EP.wallet 0; float liquidity for the wallet method of the ep [€]
+    set EP.wallet_in 0; float income for the wallet method of the ep [€]
+    set EP.wallet_out 0; float expense for the wallet method of the ep [€]
+    set EP.balance 0 ;float balance of cash and assets of the ep [€]
+    set EP.profitability 0 ;float total profitability of the ep [-]
+    set EP.expectation 0 ;float total performance expectation ratio of the ep [-]
+    set EP.roi 0 ;float return on investment [-]
+    set EP.roi_target global.EM.roi_target ;float target for ROI [-]
+    set EP.marketshare (1 / init.EM.no_ep_0) ;float market share [-]
+    set EP.invest false ;boolean if invest [-]
+    set EP.investment_new init.EM.c_man_0 ;investment cost for new man [€/MW/year]
+    set EP.costs init.HM.c_elc_0;float minimal costs for electrolyzer production [€/MW]
+    set EP.capacity_installed 0 ;int installed owned capacity [MW/year]
+    set EP.capacity_cumulative 0 ;int cumulative owned capacity [MW/year]
+    set EP.capacity_left 0 ;int capacity left for production [MW]
+    set EP.capacity_new const.MAN.new_capacity ;int capacity for new investment [MW/year]
+    set EP.capacity_added 0 ;int capacity added in this year [MW/year]
+    set EP.util 0 ;float utilization rate [-]
+    set EP.production 0 ;int production of electrolyzers [MW]
+    set EP.production_cumulative 0 ;int cumulative production of electrolyzers [MW]
+    set EP.lcoe 1e10 ;float levelized coast of electrolyzers for ep [€/MW]
+    set EP.list_income [] ;list of incomes [€]
+    set EP.list_expense [] ;list of expenses [€]
+    set EP.list_income_profitability [] ;list of income in the last n periods of the man for the profitabilty [€]
+    set EP.list_expense_profitability [] ;list of income in the last n periods of the man for the profitabilty [€]
+    set EP.list_income_expectation [] ;list of income in the last n periods of the ep for the expected profitability [€]
+    set EP.list_expense_expectation [] ;list of expense in the last n periods of the ep for the expected profitability [€]
+    set EP.list_net_cashflow [];list of the net cashflows in the last n periods of the ep for the specific cashflow [€]
+    set EP.list_capacity_installed [];list of the installed owned capacity in the last n periods of the ep for the specific cashflow [MW/year]
+    
+    ;; Tracking values
+    set EP.track.threshold []
+    set EP.track.income []
+    set EP.track.expense []
+    set EP.track.net_cashflow []
+    set EP.track.profitability []
+    set EP.track.marketshare []
+    set EP.track.invest []
+    set EP.track.liquidity []
+    set EP.track.costs []
+    set EP.track.capacity_installed []
+    set EP.track.capacity_cumulative []
+    set EP.track.capacity_left []
+    set EP.track.capacity_new []
+    set EP.track.util []
+    set EP.track.production []
+    set EP.track.production_cumulative []
+    set EP.track.specific_cashflow []
+    set EP.track.lcoe []
+    
+    ;; Update tmp.id
+    set tmp.id (tmp.id + 1)
+  ]
+  
+  ;; Distribute the MANs randomly to the EPs
+  ask Manufacturings [
+    let tmp.owner 0
+    ;; Ensure that every EP gets at least one MAN
+    ifelse MAN.id < init.EM.no_ep_0 [
+      set tmp.owner MAN.id
+    ][
+      set tmp.owner random count ElectrolyzerProducers
+    ]
+    set MAN.owner tmp.owner
+    set MAN.threshold item 0 [EP.threshold] of ElectrolyzerProducers with [EP.id = tmp.owner]
+    set MAN.investment_time item 0 [EP.investment_time] of ElectrolyzerProducers with [EP.id = tmp.owner]
+    create-link-with one-of ElectrolyzerProducers with [EP.id = tmp.owner]
+  ]
+  
+  ;; Line up all PPs and RESs for a better overview
+  let tmp.EP.xcor -19
+  let tmp.EP.ycor -1
+  ask ElectrolyzerProducers [
+    setxy tmp.EP.xcor tmp.EP.ycor
+    ask link-neighbors [ setxy (tmp.EP.xcor + 1) tmp.EP.ycor ]
+    set tmp.EP.xcor (tmp.EP.xcor + 3)
+    if tmp.EP.xcor > 17 [
+      set tmp.EP.xcor 1
+      set tmp.EP.ycor (tmp.EP.ycor - 3)
+    ]
+  ]
+  
+  ;; Update EP
+  ask ElectrolyzerProducers with [EP.alive] [
+    set tmp.id EP.id
+    set EP.marketshare ((sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.id]) / (sum [MAN.capacity] of Manufacturings))
+    set EP.capacity_installed sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.id]
+    set EP.capacity_cumulative sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.id]
+    set EP.capacity_left sum [MAN.capacity] of Manufacturings with [MAN.owner = tmp.id]
+    set EP.list_assets link-neighbors
+  ]
+end

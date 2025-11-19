@@ -1,0 +1,346 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------ Plotting Functions -------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; -------------------------------------------- Power Market ------------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to plot.PM.day []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plot all daily data from the power market:
+  ;; PM generation, demand etc
+  ;; PM share renewables
+  ;; PM price and payout
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; PM Generation
+  plot.PM.generation
+  
+  ;; PM Share renewables
+  plot.PM.share
+  
+  ;; PM Price
+  plot.PM.price
+end
+
+to plot.PM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plot all yearly data from the power market:
+  ;; PM agents
+  ;; PM investments
+  ;; PM installed capacity
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Agents
+  plot.PM.agent
+  
+  ;; Investments
+  plot.PM.investments
+  
+  ;; Installed capacities
+  plot.PM.cap_inst
+end
+
+to plot.PM.agent []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the number of active agents in the PM
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Agents"
+  set-current-plot-pen "pen-pp"
+  plot count PowerProducers with [PP.alive]
+end
+
+to plot.PM.investments []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the numbers of investments in the power market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Investments"
+  set-current-plot-pen "pen-pp"
+  plot global.PM.no_investment
+end
+
+to plot.PM.cap_inst []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the current installed capacites of RES
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "PM Installed capacities"
+  set-current-plot-pen "pen-res"
+  plot global.PM.installed_capacity
+end
+  
+to plot.PM.generation []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots power demand, and renewables generation and maximum
+  ;; renewables
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; The maximum possible production by renewables 
+  let list_production_max func.scalar_mult (sum [RES.capacity] of Renewables * 24) func.pm.get_res_capacity_factor
+  set-current-plot "PM Generation"
+  set-current-plot-pen "pen-res_max"
+  foreach list_production_max [
+    x ->
+    plot x
+  ]
+  
+  ;; The actual production by renewables
+  set-current-plot-pen "pen-res"
+  foreach global.PM.list_production [
+    x ->
+    plot x
+  ]
+  
+  ;; The maximum total electricity demand
+  let list_demand_other func.pm.get_elc_demand_other
+  set-current-plot-pen "pen-demand_total"
+  foreach list_demand_other [
+    x ->
+    plot (x + sum [ELC.capacity] of Electrolyzers * 24)
+  ]
+
+  ;; The electricity demand by ohter
+  set-current-plot-pen "pen-demand_other"
+  foreach list_demand_other [
+    x ->
+    plot x
+  ]
+  
+  ;; The actual electricity demand
+  set-current-plot-pen "pen-demand"
+  foreach global.PM.list_demand [
+    x -> 
+    plot x
+  ]
+end
+
+to plot.PM.share []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the share of renewable each day
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; The share of renewables
+  set-current-plot "PM Share"
+  set-current-plot-pen "pen-res"
+  foreach global.PM.list_shares [
+    x ->
+    plot x
+  ]
+end
+
+to plot.PM.price []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots price and payout for renewables
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;; The price
+  set-current-plot "PM Cost"
+  set-current-plot-pen "pen-res"
+  foreach global.PM.list_price [
+    x ->
+    plot x
+  ]
+  
+  ;; The payout
+  set-current-plot-pen "pen-res_p"
+  foreach global.PM.list_payout [
+    x -> 
+    plot x
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------ Hydrogen Market ----------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to plot.HM.day []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plot all daily data from the power market:
+  ;; PM generation, demand etc
+  ;; PM share renewables
+  ;; PM price and payout
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; HM price
+  plot.HM.cost
+  
+  ;; HM Utilization
+  plot.HM.utilization
+  
+  ;; HM Production
+  plot.HM.production
+end
+
+to plot.HM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots all yearly values of the hydrogen market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Agents
+  plot.HM.agent
+  
+  ;; Investment
+  plot.HM.investment
+  
+  ;; Installed capacities
+  plot.HM.cap_inst
+end
+
+to plot.HM.agent []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the number of active agents in the PM
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Agents"
+  set-current-plot-pen "pen-hp"
+  plot count HydrogenProducers with [HP.alive]  
+end
+
+to plot.HM.investment []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the numbers of investments in the hydrogen market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Investments"
+  set-current-plot-pen "pen-hp"
+  plot global.HM.no_investment
+end
+
+to plot.HM.cap_inst []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the current installed capacities of ELC
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "HM Installed capacities"
+  set-current-plot-pen "pen-elc"
+  plot global.HM.installed_capacity
+end
+
+to plot.HM.cost []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the costs and payout for hydrogen
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Electricity price
+  set-current-plot "PM Cost"
+  set-current-plot-pen "pen-hydrogen"
+  foreach global.HM.list_expense [
+    x ->
+    plot x
+  ]
+  
+  ;; Payout for hydrogen
+  set-current-plot-pen "pen-hydrogen_p"
+  foreach global.HM.list_income [
+    x -> 
+    plot x
+  ]
+end
+
+to plot.HM.utilization []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the utilization of all electrolyzers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Utilization rate
+  set-current-plot "HM Utilization"
+  set-current-plot-pen "pen-elc"
+  foreach global.HM.list_util [
+    x ->
+    plot x
+  ]
+end
+
+
+to plot.HM.production []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the production of all electrolyzers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; The actual production by renewables
+  set-current-plot "HM Produced"
+  set-current-plot-pen "pen-h2"
+  foreach global.HM.list_production [
+    x ->
+    plot x
+  ]
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ---------------------------------------- Electrolyzer Market --------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to plot.EM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots all yearly values of the electrolyzer market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Agents
+  plot.EM.agent
+  
+  ;; Investment
+  plot.EM.investment
+  
+  ;; Electrolyzers costs
+  plot.EM.costs
+  end
+
+to plot.EM.agent []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the number of active agents in the PM
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Agents"
+  set-current-plot-pen "pen-ep"
+  plot count ElectrolyzerProducers with [EP.alive] 
+end
+
+to plot.EM.investment []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the numbers of investments in the hydrogen market
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  set-current-plot "Investments"
+  set-current-plot-pen "pen-ep"
+  plot global.EM.no_investment
+end
+to plot.EM.costs []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Plots the minimal and actual minimal costs for electrolyzers
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; The minimal costs
+  set-current-plot "EM Cost"
+  set-current-plot-pen "pen-cost"
+  plot global.EM.cost_elc
+  
+  ;; The actual minimal costs
+  set-current-plot-pen "pen-cost_act"
+  ifelse any? ElectrolyzerProducers with [EP.alive] [
+    plot min [EP.costs] of ElectrolyzerProducers with [EP.alive]
+  ][
+    plot min [EP.costs] of ElectrolyzerProducers
+  ]
+end

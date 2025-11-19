@@ -1,0 +1,1249 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------ Writing Functions --------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to write.line [tmp.file tmp.line]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes a new line into a csv file
+  ;; IN: string tmp.file - filename/path
+  ;;     list tmp.line - values for the line to seperate by comma
+  ;; OUT: - 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  file-open tmp.file
+  foreach tmp.line [
+    x ->
+    file-type x
+  ]
+  file-print ""
+  file-close  
+end
+
+to write.block [tmp.file tmp.block]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes a new block of lines into a csv file
+  ;; IN: string tmp.file - filename/path
+  ;;     list tmp.block - lists of line to seperate by comma
+  ;; OUT: - 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  file-open tmp.file
+  foreach tmp.block [
+    x ->
+    foreach x [
+      y ->
+      file-type y
+    ]
+    file-print ""
+  ]
+  file-close
+end
+
+to-report write.get_list_day []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Reports a list with days and the current year
+  ;; IN: -
+  ;; OUT: [list tmp.day; list tmp.year] - list with 365 days and
+  ;;                                      list with the current year
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create array for day and year
+  let tmp.x 1
+  let tmp.day []
+  let tmp.year []
+  while [tmp.x <= 365] [
+    set tmp.day lput tmp.x tmp.day
+    set tmp.year lput global.year tmp.year
+    set tmp.x (tmp.x + 1)
+  ]
+  
+  ;; Create output list
+  let tmp.list []
+  set tmp.list lput tmp.day tmp.list
+  set tmp.list lput tmp.year tmp.list
+  report tmp.list
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; -------------------------------------------- Power Market ------------------------------------------------ ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to write.PM.day []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data into one file:
+  ;; Year
+  ;; Day
+  ;; Price Electricity
+  ;; Payout Electricity
+  ;; Maximum production renewables
+  ;; Actual production renewables
+  ;; Electricity demand total
+  ;; Electricity demand electrolyzers
+  ;; Electricity demand others
+  ;; Share of renewables
+  ;; Curtailment of renewables
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Get the values that are not saved as globals
+  let list_demand_other func.pm.get_elc_demand_other
+  let list_production_max func.scalar_mult (sum [RES.capacity] of Renewables * 24) func.pm.get_res_capacity_factor
+  
+  ;; Create array for day and year
+  let tmp.list write.get_list_day
+  let tmp.day item 0 tmp.list
+  let tmp.year item 1 tmp.list
+  
+  ;; Create block to write
+  let tmp.block []
+  (foreach tmp.year tmp.day global.PM.list_price global.PM.list_payout list_production_max global.PM.list_production global.PM.list_demand list_demand_other global.PM.list_shares [
+    [a b c d f g h j k] ->
+    let tmp.line []
+    set tmp.line lput a tmp.line ;; year
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line ;; day
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line ;; price
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line ;; payout
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line ;; maximum production
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line ;; actual production
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line ;; electricity demand total
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput (h - j) tmp.line ;; electricity demand electrolyzers
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line ;; electricity demand other
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line ;; share of renewables
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput (f - g) tmp.line ;; curtailment of renewables
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write the data
+  write.block outfile.PM.day tmp.block
+end
+
+to write.PM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of the power market into one file:
+  ;; Year
+  ;; No. of PowerProducers
+  ;; No. of PowerProducers from start
+  ;; No. of Renewables
+  ;; No. of Renewables from start
+  ;; No. of Investment PM
+  ;; Installed capacity Renewables
+  ;; Cumulative installed capacity Renewables
+  ;; Added capacity Renewables
+  ;; Weighted Price Electricity
+  ;; LCOE
+  ;; Global minimun investment threshold
+  ;; Cost share
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create line for the Power Market file
+  let tmp.line []
+  
+  ;; Fill line to write
+  set tmp.line lput global.year tmp.line ;; year
+  set tmp.line lput settings.seperator tmp.line  
+  set tmp.line lput count PowerProducers with [PP.alive] tmp.line ;; no of pp
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.no_pp tmp.line ;; no of pp cum
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput count Renewables tmp.line ;; no of res
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.no_res tmp.line ;; no of res cum
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.no_investment tmp.line ;; no of invest
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.installed_capacity tmp.line ;; installed capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.cumulative_capacity tmp.line ;; cumulative capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.added_capacity tmp.line ;; added capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.weighted_price tmp.line ;; weighted price
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.lcoe tmp.line ;; lcoe
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.threshold_min tmp.line ;; global investment threshold
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.PM.cost_share tmp.line ;; cost share
+  
+  ;; Write the data
+  write.line outfile.PM.year tmp.line
+end
+
+to write.PP.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of all PowerProducers into one file:
+  ;; Year
+  ;; ID
+  ;; Investment threshold
+  ;; Income
+  ;; Net cashflow
+  ;; Profitability
+  ;; Market share
+  ;; Liquidity
+  ;; Installed capacity Renewables
+  ;; Cumulative installed capacity Renewables
+  ;; Added capacity Renewables
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; specific cashflow
+  ;; LCOE
+  ;; Weighted price Electricity
+  ;; Delta phi max
+  ;; Return on Investment
+  ;; Wallet
+  ;; Wallet in
+  ;; Wallet out
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Power Producer file
+  let tmp.year []
+  let tmp.id []
+  let tmp.threshold []
+  let tmp.income []
+  let tmp.net_cash []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.share []
+  let tmp.liquidity []
+  let tmp.cap_inst []
+  let tmp.cap_cum []
+  let tmp.cap_add []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.prod_cum []
+  let tmp.spe_cash []
+  let tmp.lcoe []
+  let tmp.price_weig []
+  let tmp.delta_phi []
+  let tmp.roi []
+  let tmp.wallet []
+  let tmp.wallet_in []
+  let tmp.wallet_out []
+  
+  ask PowerProducers with [PP.alive] [  
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput PP.id tmp.id
+    set tmp.threshold lput PP.threshold tmp.threshold
+    set tmp.income lput PP.income tmp.income
+    set tmp.net_cash lput PP.net_cashflow tmp.net_cash
+    set tmp.profit lput PP.profitability tmp.profit
+    set tmp.expect lput PP.expectation tmp.expect
+    set tmp.share lput PP.marketshare tmp.share
+    set tmp.liquidity lput PP.liquidity tmp.liquidity
+    set tmp.cap_inst lput PP.capacity_installed tmp.cap_inst
+    set tmp.cap_cum lput PP.capacity_cumulative tmp.cap_cum
+    set tmp.cap_add lput PP.capacity_added tmp.cap_add
+    set tmp.util lput PP.util tmp.util
+    set tmp.prod lput PP.production tmp.prod
+    set tmp.prod_cum lput PP.production_cumulative tmp.prod_cum
+    set tmp.spe_cash lput PP.specific_cashflow tmp.spe_cash
+    set tmp.lcoe lput PP.lcoe tmp.lcoe
+    set tmp.price_weig lput PP.weighted_price tmp.price_weig
+    set tmp.delta_phi lput PP.delta_threshold_max tmp.delta_phi
+    set tmp.roi lput PP.roi tmp.roi
+    set tmp.wallet lput PP.wallet tmp.wallet
+    set tmp.wallet_in lput PP.wallet_in tmp.wallet_in
+    set tmp.wallet_out lput PP.wallet_out tmp.wallet_out
+  ]
+  
+  ;; Create block to write
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.threshold tmp.income tmp.net_cash tmp.profit tmp.expect tmp.share tmp.liquidity tmp.cap_inst tmp.cap_cum tmp.cap_add tmp.util tmp.prod tmp.prod_cum tmp.spe_cash tmp.lcoe tmp.price_weig tmp.delta_phi tmp.roi tmp.wallet tmp.wallet_in tmp.wallet_out [
+    [a b c d f g h j k l m n o p q r s t u v w x y] ->
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput q tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput r tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput s tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput t tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput u tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput v tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput w tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput x tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput y tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write the data
+  write.block outfile.PP.year tmp.block
+end
+
+to write.RES.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of all Renewables into one file:
+  ;; Year
+  ;; ID
+  ;; Owner
+  ;; Age
+  ;; Income
+  ;; Profitability
+  ;; Liquidity
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; LCOE
+  ;; Capacity
+  ;; Return on Investment
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Renewable file
+  let tmp.year []
+  let tmp.id []
+  let tmp.owner []
+  let tmp.age []
+  let tmp.income []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.liquidity []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.prod_cum []
+  let tmp.lcoe []
+  let tmp.cap []
+  let tmp.roi []
+  
+  ask Renewables [
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput RES.id tmp.id
+    set tmp.owner lput RES.owner tmp.owner
+    set tmp.age lput RES.age tmp.age
+    set tmp.income lput RES.income tmp.income
+    set tmp.profit lput RES.profitability tmp.profit
+    set tmp.expect lput RES.expectation tmp.expect
+    set tmp.liquidity lput RES.liquidity tmp.liquidity
+    set tmp.util lput RES.util tmp.util
+    set tmp.prod lput RES.production tmp.prod
+    set tmp.prod_cum lput RES.production_cumulative tmp.prod_cum
+    set tmp.lcoe lput RES.lcoe tmp.lcoe
+    set tmp.cap lput RES.capacity tmp.cap
+    set tmp.roi lput RES.roi tmp.roi
+  ]
+  
+  ;; Create block
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.owner tmp.age tmp.income tmp.profit tmp.expect tmp.liquidity tmp.util tmp.prod tmp.prod_cum tmp.lcoe tmp.cap tmp.roi [
+    [a b c d f g h j k l m n o p] -> 
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write data
+  write.block outfile.RES.year tmp.block
+end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------- Hydrogen Market ---------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to write.HM.day []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data into one file:
+  ;; Year
+  ;; Day
+  ;; Payout hydrogen
+  ;; Expense hydrogen
+  ;; Utilization electrolyzers
+  ;; Actual production electrolyzers
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create array for day and year
+  let tmp.list write.get_list_day
+  let tmp.day item 0 tmp.list
+  let tmp.year item 1 tmp.list
+  
+  ;; Create block to write
+  let tmp.block []
+  (foreach tmp.year tmp.day global.HM.list_income global.HM.list_expense global.HM.list_util global.HM.list_production [
+    [a b c d f g] ->
+    let tmp.line []
+    set tmp.line lput a tmp.line ;; year
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line ;; day
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line ;; payout
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line ;; expense
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line ;; utilization
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line ;; production
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+
+  ;; Write the data
+  write.block outfile.HM.day tmp.block
+end
+
+to write.HM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data into one file:
+  ;; Year
+  ;; No. of HydrogenProducers
+  ;; No. of Electrolyzers
+  ;; No. of Investment HM
+  ;; Installed capacity Electrolyzers
+  ;; Cumulative installed capacity Electrolyzers
+  ;; Added capacity Electrolyzers
+  ;; Price Hydrogen
+  ;; Payout Hydrogen
+  ;; LCOH
+  ;; Global minimum investment threshold
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create line for the Hydrogen Market file
+  let tmp.line []
+  
+  ;; File line to write
+  set tmp.line lput global.year tmp.line ;; year
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput count HydrogenProducers with [HP.alive] tmp.line ;; no of hp
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.no_hp tmp.line ;; no of hp from start
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput count Electrolyzers tmp.line ;; no of elc
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.no_elc tmp.line ;; no of elc from start
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.no_investment tmp.line ;; no of invest
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.installed_capacity tmp.line ;; installed capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.cumulative_capacity tmp.line ;; cumulative capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.added_capacity tmp.line ;; added capacity
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.price_h2 tmp.line ;; price
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.payout_h2 tmp.line ;; payout
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.lcoh tmp.line ;; lcoh
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.HM.threshold_min tmp.line ;; global invesment threshold
+  
+  ;; Write the data
+  write.line outfile.HM.year tmp.line
+end
+
+to write.HP.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of all HydrogenProducers into one
+  ;; file:
+  ;; Year
+  ;; ID
+  ;; Investment threshold
+  ;; Income
+  ;; Expense
+  ;; Net cashflow
+  ;; Profitability
+  ;; Market share
+  ;; Liquidity
+  ;; Installed capacity Electrolyzers
+  ;; Cumulative installed capacity Electrolyzers
+  ;; Added capacity Electrolyzers
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; specific cashflow
+  ;; LCOH
+  ;; Delta threshold max
+  ;; Return on Investment
+  ;; Wallet
+  ;; Wallet in
+  ;; Wallet out
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Power Producer file
+  let tmp.year []
+  let tmp.id []
+  let tmp.threshold []
+  let tmp.income []
+  let tmp.expense []
+  let tmp.net_cash []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.share []
+  let tmp.liquid []
+  let tmp.inst_cap []
+  let tmp.cum_cap []
+  let tmp.add_cap []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.cum_prod []
+  let tmp.spec_cash []
+  let tmp.lcoh []
+  let tmp.w2p []
+  let tmp.delta_phi []
+  let tmp.roi []
+  let tmp.wallet []
+  let tmp.wallet_in []
+  let tmp.wallet_out []
+  
+  ask HydrogenProducers with [HP.alive] [
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput HP.id tmp.id
+    set tmp.threshold lput HP.threshold tmp.threshold
+    set tmp.income lput HP.income tmp.income
+    set tmp.expense lput HP.expense tmp.expense
+    set tmp.net_cash lput HP.net_cashflow tmp.net_cash
+    set tmp.profit lput HP.profitability tmp.profit
+    set tmp.expect lput HP.expectation tmp.expect
+    set tmp.share lput HP.marketshare tmp.share
+    set tmp.liquid lput HP.liquidity tmp.liquid
+    set tmp.inst_cap lput HP.capacity_installed tmp.inst_cap
+    set tmp.cum_cap lput HP.capacity_cumulative tmp.cum_cap
+    set tmp.add_cap lput HP.capacity_added tmp.add_cap
+    set tmp.util lput HP.util tmp.util
+    set tmp.prod lput HP.production tmp.prod
+    set tmp.cum_prod lput HP.production_cumulative tmp.cum_prod
+    set tmp.spec_cash lput HP.specific_cashflow tmp.spec_cash
+    set tmp.lcoh lput HP.lcoh tmp.lcoh
+    set tmp.w2p lput HP.w2p tmp.w2p
+    set tmp.delta_phi lput HP.delta_threshold_max tmp.delta_phi
+    set tmp.roi lput HP.roi tmp.roi
+    set tmp.wallet lput HP.wallet tmp.wallet
+    set tmp.wallet_in lput HP.wallet_in tmp.wallet_in
+    set tmp.wallet_out lput HP.wallet_out tmp.wallet_out
+  ]
+    
+  ;; Create block to write
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.threshold tmp.income tmp.expense tmp.net_cash tmp.profit tmp.expect tmp.share tmp.liquid tmp.inst_cap tmp.cum_cap tmp.add_cap tmp.util tmp.prod tmp.cum_prod tmp.spec_cash tmp.lcoh tmp.w2p tmp.delta_phi tmp.roi tmp.wallet tmp.wallet_in tmp.wallet_out [
+    [a b c d f g h j k l m n o p q r s t u v w x y z] ->
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput q tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput r tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput s tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput t tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput u tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput v tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput w tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput x tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput y tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput z tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write the data
+  write.block outfile.HP.year tmp.block
+end
+
+to write.ELC.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of all Electrolyzers into one file:
+  ;; Year
+  ;; ID
+  ;; Owner
+  ;; Age
+  ;; Income
+  ;; Expense
+  ;; Net cashflow
+  ;; Profitability
+  ;; Liquidity
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; LCOH
+  ;; Capacity
+  ;; Return on Investment
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Electrolyzers file
+  let tmp.year []
+  let tmp.id []
+  let tmp.owner []
+  let tmp.age []
+  let tmp.income []
+  let tmp.expense []
+  let tmp.net_cash []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.liquid []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.prod_cum []
+  let tmp.lcoh []
+  let tmp.cap []
+  let tmp.roi []
+  
+  ask Electrolyzers [
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput ELC.id tmp.id
+    set tmp.owner lput ELC.owner tmp.owner
+    set tmp.age lput ELC.age tmp.age
+    set tmp.income lput ELC.income tmp.income
+    set tmp.expense lput ELC.expense tmp.expense
+    set tmp.net_cash lput (ELC.income - ELC.expense) tmp.net_cash
+    set tmp.profit lput ELC.profitability tmp.profit
+    set tmp.expect lput ELC.expectation tmp.expect
+    set tmp.liquid lput ELC.liquidity tmp.liquid
+    set tmp.util lput ELC.util tmp.util
+    set tmp.prod lput ELC.production tmp.prod
+    set tmp.prod_cum lput ELC.production_cumulative tmp.prod_cum
+    set tmp.lcoh lput ELC.lcoh tmp.lcoh
+    set tmp.cap lput ELC.capacity tmp.cap
+    set tmp.roi lput ELC.roi tmp.roi
+  ]
+  
+  ;; Create block
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.owner tmp.age tmp.income tmp.expense tmp.net_cash tmp.profit tmp.expect tmp.liquid tmp.util tmp.prod tmp.prod_cum tmp.lcoh tmp.cap tmp.roi [
+    [a b c d f g h j k l m n o p q r] -> 
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput q tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput r tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write data
+  write.block outfile.ELC.year tmp.block
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ------------------------------------------ Electrolyzer Market ------------------------------------------- ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+to write.EM.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of the power market into one file:
+  ;; Year
+  ;; No. of PowerProducers
+  ;; No. of Renewables
+  ;; No. of Investment EM
+  ;; Installed capacity Manufacturings
+  ;; Cumulative installed capacity Manufacturings
+  ;; Added capacity Manufacturings
+  ;; Actual minimal costs electrolyzers
+  ;; Minimal costs electrolyzers
+  ;; LCOE
+  ;; Global minimum investment threshold
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create line for the Electrolyzer Market file
+  let tmp.line []
+  
+  ;; Fill line to write
+  set tmp.line lput global.year tmp.line ;; year
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput count ElectrolyzerProducers with [EP.alive] tmp.line ;; no of ep
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.no_ep tmp.line ;; no of ep from start
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput count Manufacturings tmp.line ;; no of man
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.no_man tmp.line ;; no of man from start
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.no_investment tmp.line ;; no of invest
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.installed_capacity tmp.line ;; instal cap
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.cumulative_capacity tmp.line ;; cum cap
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.added_capacity tmp.line ;; add cap
+  set tmp.line lput settings.seperator tmp.line 
+  ifelse any? Manufacturings [
+    set tmp.line lput (min [MAN.costs] of Manufacturings) tmp.line ;; act min costs elc
+  ][
+    set tmp.line lput 1e10 tmp.line
+  ]
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.cost_elc tmp.line ;; min costs elc
+  set tmp.line lput settings.seperator tmp.line 
+  set tmp.line lput global.EM.lcoe tmp.line ;; lcoe
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput global.EM.threshold_min tmp.line ;; global investment threshold
+  
+  ;; Write the data
+  write.line outfile.EM.year tmp.line
+end
+
+to write.EP.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all daily data of all ElectrolyzerProducers into
+  ;; one file:
+  ;; Year
+  ;; ID
+  ;; Investment threshold
+  ;; Income
+  ;; Expense
+  ;; Net cashflow
+  ;; Profitability
+  ;; Market share
+  ;; Liquidity
+  ;; Minimal costs Electrolyzers
+  ;; Installed capacity Manufacturings
+  ;; Cumulative installed capacity Manufacturings
+  ;; Added capacity Manufacturings
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; specific cashflow
+  ;; LCOE
+  ;; Delta threshold max
+  ;; Return on Investment
+  ;; Wallet
+  ;; Wallet in
+  ;; Wallet out
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Power Producer file
+  let tmp.year []
+  let tmp.id []
+  let tmp.threshold []
+  let tmp.income []
+  let tmp.expense []
+  let tmp.net_cash []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.share []
+  let tmp.liquid []
+  let tmp.costs []
+  let tmp.inst_cap []
+  let tmp.cum_cap []
+  let tmp.add_cap []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.cum_prod []
+  let tmp.spec_cash []
+  let tmp.lcoe []
+  let tmp.delta_phi []
+  let tmp.roi []
+  let tmp.wallet []
+  let tmp.wallet_in []
+  let tmp.wallet_out []
+  
+  ask ElectrolyzerProducers with [EP.alive] [
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput EP.id tmp.id
+    set tmp.threshold lput EP.threshold tmp.threshold
+    set tmp.income lput EP.income tmp.income
+    set tmp.expense lput EP.expense tmp.expense
+    set tmp.net_cash lput EP.net_cashflow tmp.net_cash
+    set tmp.profit lput EP.profitability tmp.profit
+    set tmp.expect lput EP.expectation tmp.expect
+    set tmp.share lput EP.marketshare tmp.share
+    set tmp.liquid lput EP.liquidity tmp.liquid
+    set tmp.costs lput EP.costs tmp.costs
+    set tmp.inst_cap lput EP.capacity_installed tmp.inst_cap
+    set tmp.cum_cap lput EP.capacity_cumulative tmp.cum_cap
+    set tmp.add_cap lput EP.capacity_added tmp.add_cap
+    set tmp.util lput EP.util tmp.util
+    set tmp.prod lput EP.production tmp.prod
+    set tmp.cum_prod lput EP.production_cumulative tmp.cum_prod
+    set tmp.spec_cash lput EP.specific_cashflow tmp.spec_cash
+    set tmp.lcoe lput EP.lcoe tmp.lcoe
+    set tmp.delta_phi lput EP.delta_threshold_max tmp.delta_phi
+    set tmp.roi lput EP.roi tmp.roi
+    set tmp.wallet lput EP.wallet tmp.wallet
+    set tmp.wallet_in lput EP.wallet_in tmp.wallet_in
+    set tmp.wallet_out lput EP.wallet_out tmp.wallet_out
+  ]
+  
+  ;; Create block to write
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.threshold tmp.income tmp.expense tmp.net_cash tmp.profit tmp.expect tmp.share tmp.liquid tmp.costs tmp.inst_cap tmp.cum_cap tmp.add_cap tmp.util tmp.prod tmp.cum_prod tmp.spec_cash tmp.lcoe tmp.delta_phi tmp.roi tmp.wallet tmp.wallet_in tmp.wallet_out [
+    [a b c d f g h j k l m n o p q r s t u v w x y z] ->
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput q tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput r tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput s tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput t tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput u tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput v tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput w tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput x tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput y tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput z tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write the data
+  write.block outfile.EP.year tmp.block
+end
+
+to write.MAN.year []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all yearly data of all Manufacturings into one file:
+  ;; Year
+  ;; ID
+  ;; Owner
+  ;; Age
+  ;; Income
+  ;; Expense
+  ;; Net cashflow
+  ;; Profitability
+  ;; Liquidity
+  ;; Utilization rate
+  ;; Production
+  ;; Cumulative Production
+  ;; LCOE
+  ;; Capacity
+  ;; Return on Investment
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create arrays for the Manufacturings file
+  let tmp.year []
+  let tmp.id []
+  let tmp.owner []
+  let tmp.age []
+  let tmp.income []
+  let tmp.expense []
+  let tmp.net_cash []
+  let tmp.profit []
+  let tmp.expect []
+  let tmp.liquid []
+  let tmp.util []
+  let tmp.prod []
+  let tmp.prod_cum []
+  let tmp.lcoe []
+  let tmp.cap []
+  let tmp.costs []
+  let tmp.roi []
+  
+  ask Manufacturings [
+    set tmp.year lput global.year tmp.year
+    set tmp.id lput MAN.id tmp.id
+    set tmp.owner lput MAN.owner tmp.owner
+    set tmp.age lput MAN.age tmp.age
+    set tmp.income lput MAN.income tmp.income
+    set tmp.expense lput MAN.expense tmp.expense
+    set tmp.net_cash lput (MAN.income - MAN.expense) tmp.net_cash
+    set tmp.profit lput MAN.profitability tmp.profit
+    set tmp.expect lput MAN.expectation tmp.expect
+    set tmp.liquid lput MAN.liquidity tmp.liquid
+    set tmp.util lput MAN.util tmp.util
+    set tmp.prod lput MAN.production tmp.prod
+    set tmp.prod_cum lput MAN.production_cumulative tmp.prod_cum
+    set tmp.lcoe lput MAN.lcoe tmp.lcoe
+    set tmp.cap lput MAN.capacity tmp.cap
+    set tmp.costs lput MAN.costs tmp.costs
+    set tmp.roi lput MAN.roi tmp.roi
+  ]
+  
+  ;; Create block
+  let tmp.block []
+  let tmp.line []
+  (foreach tmp.year tmp.id tmp.owner tmp.age tmp.income tmp.expense tmp.net_cash tmp.profit tmp.expect tmp.liquid tmp.util tmp.prod tmp.prod_cum tmp.lcoe tmp.cap tmp.costs tmp.roi [
+    [a b c d f g h j k l m n o p q r s] -> 
+    set tmp.line []
+    set tmp.line lput a tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput b tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput c tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput d tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput f tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput g tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput h tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput j tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput k tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput l tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput m tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput n tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput o tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput p tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput q tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput r tmp.line
+    set tmp.line lput settings.seperator tmp.line
+    set tmp.line lput s tmp.line
+    
+    set tmp.block lput tmp.line tmp.block
+  ])
+  
+  ;; Write data
+  write.block outfile.MAN.year tmp.block
+end
+
+to write.SALE.year [tmp.hp_id tmp.ep_id tmp.elc_price_hp tmp.elc_price_ep tmp.elc_price tmp.elc_payout tmp.elc_capacity]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes all yearly data of all Sales into one file:
+  ;; Year
+  ;; HP ID
+  ;; EP ID
+  ;; Willingness to pay
+  ;; Production costs
+  ;; Price
+  ;; Payout
+  ;; Capacity
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: tmp.hp_id - ID of buyer [-]
+  ;;     tmp.ep_id - ID of seller [-]
+  ;;     tmp.elc_price_hp - Willingness to pay [€/MW]
+  ;;     tmp.elc_price_ep - Production costs [€/MW]
+  ;;     tmp.elc_price - Price for electrolyzer in sale [€/MW]
+  ;;     tmp.elc_payout - Payout for seller [€/MW]
+  ;;     tmp.elc_capacity - Capacity of Sale [MW]
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  ;; Create line for the Sales file
+  let tmp.line []
+  
+  ;; File line to write
+  set tmp.line lput global.year tmp.line ;; year
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.hp_id tmp.line ;; ID of hp
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.ep_id tmp.line ;; ID of ep
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.elc_price_hp tmp.line ;; willingness to pay
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.elc_price_ep tmp.line ;; production costs
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.elc_price tmp.line ;; price
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.elc_payout tmp.line ;; payout
+  set tmp.line lput settings.seperator tmp.line
+  set tmp.line lput tmp.elc_capacity tmp.line ;; capacity
+  
+  ;; Write the data
+  write.line outfile.SALE.year tmp.line
+end
+
+to write.CONFIG []
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Writes the setting of the current run into a file:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; IN: -
+  ;; OUT: -
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Create block for Config file
+  let tmp.block []
+  let tmp.line []
+  
+  ;; Write scenario settings
+  set tmp.block lput ["### SCENARIO SETTINGS ###"] tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.ref: " tmp.line
+  set tmp.line lput scenario.ref tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.co2_tax: " tmp.line
+  set tmp.line lput scenario.co2_tax tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.h2_subsidy: " tmp.line
+  set tmp.line lput scenario.h2_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.h2_guarant: " tmp.line
+  set tmp.line lput scenario.h2_guarant tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.res_subsidy: " tmp.line
+  set tmp.line lput scenario.res_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.power_subsidy: " tmp.line
+  set tmp.line lput scenario.power_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.elc_subsidy: " tmp.line
+  set tmp.line lput scenario.elc_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.elc_guarant: " tmp.line
+  set tmp.line lput scenario.elc_guarant tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.man_subsidy: " tmp.line
+  set tmp.line lput scenario.man_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "scenario.time_lag: " tmp.line
+  set tmp.line lput scenario.time_lag tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.block lput tmp.line tmp.block
+  
+  ;; Write sensitivity settings
+  set tmp.block lput ["### SENSITIVITY SETTINGS ###"] tmp.block
+  set tmp.line []
+  set tmp.line lput "const.beta: " tmp.line
+  set tmp.line lput const.beta tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.PM.delta_threshold: " tmp.line
+  set tmp.line lput const.PM.delta_threshold tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.HM.delta_threshold: " tmp.line
+  set tmp.line lput const.HM.delta_threshold tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.EM.delta_threshold: " tmp.line
+  set tmp.line lput const.EM.delta_threshold tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.gamma: " tmp.line
+  set tmp.line lput const.gamma tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "init.HM.threshold_0: " tmp.line
+  set tmp.line lput init.HM.threshold_0 tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "init.EM.threshold_0: " tmp.line
+  set tmp.line lput init.EM.threshold_0 tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.EM.inexperience_penalty_max: " tmp.line
+  set tmp.line lput const.EM.inexperience_penalty_max tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.EM.global_share: " tmp.line
+  set tmp.line lput const.EM.global_share tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "const.MAN.learning_rate: " tmp.line
+  set tmp.line lput const.MAN.learning_rate tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.h2_subsidy: " tmp.line
+  set tmp.line lput GOV.h2_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.h2_guarant: " tmp.line
+  set tmp.line lput GOV.h2_guarant tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.res_subsidy: " tmp.line
+  set tmp.line lput GOV.res_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.power_subsidy: " tmp.line
+  set tmp.line lput GOV.power_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.power_guaranta: " tmp.line
+  set tmp.line lput GOV.power_guarant tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.elc_subsidy: " tmp.line
+  set tmp.line lput GOV.elc_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.elc_guarant: " tmp.line
+  set tmp.line lput GOV.elc_guarant tmp.line
+  set tmp.block lput tmp.line tmp.block
+  set tmp.line []
+  set tmp.line lput "GOV.man_subsidy: " tmp.line
+  set tmp.line lput GOV.man_subsidy tmp.line
+  set tmp.block lput tmp.line tmp.block
+
+  ;; Write data
+  write.block outfile.CONFIG tmp.block
+  
+end
