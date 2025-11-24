@@ -3374,9 +3374,9 @@ def main(dir):
     df_res, df_elc, df_man = tmp_list[10], tmp_list[0], tmp_list[6]
 
     # Debug
-    plot_best_profitability(df_pp, df_hp, df_ep)
-    plot_weighted_return_on_investment_all(df_res, df_elc, df_man)
-    return(123)
+    #plot_best_profitability(df_pp, df_hp, df_ep)
+    #plot_weighted_return_on_investment_all(df_res, df_elc, df_man)
+    #return(123)
     #exit(12438934)
 
     # Create all plots

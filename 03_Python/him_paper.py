@@ -97,7 +97,7 @@ resultSensCsv = 'sensitivity.csv'
 resultLearning = '2025-11-07-22-32'
 resultValidation = '2025-11-12-00-11'
 
-resultDir = 'D:\\Jesse\\ABM\\02_NetLogo\\02_Output'
+resultDir = 'D:\\USER\\ABM\\02_NetLogo\\02_Output' ## CHANGE THIS
 listFiles = ['elc_year.csv', 'em_year.csv', 'ep_year.csv', 'hm_day.csv', 'hm_year.csv', 'hp_year.csv', 'man_year.csv',
              'pm_day.csv', 'pm_year.csv', 'pp_year.csv', 'res_year.csv', 'sale_year.csv']
 

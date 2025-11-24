@@ -27,10 +27,8 @@ global scenario_settings
 global run_settings
 global sensitivity_settings
 
-jvm_file = 'D:/Jesse/openJDK/jdk-22.0.1/bin/server/jvm.dll'
-jvm_file = 'D:/ProgrammeSTE/openjdk 21/jdk-21.0.1/bin/server/jvm.dll'
-netlogo_file = 'C:/Program Files/NetLogo 6.4.0'
-netlogo_file = 'D:/ProgrammeSTE/NetLogo 6.4.0'
+jvm_file = 'C:/Users/openJDK/jdk-22.0.1/bin/server/jvm.dll' # CHANGE THIS
+netlogo_file = 'C:/Program Files/NetLogo 6.4.0' # CHANGE THIS
 
 scenario_settings = ['ref', 'co2_tax', 'h2_subsidy', 'h2_guarant', 'res_subsidy', 'power_subsidy', 'power_guarant',
                      'elc_subsidy', 'elc_guarant', 'man_subsidy', 'time_lag']
@@ -48,7 +46,7 @@ def check_model():
         str modeldir: location of the model
     '''
     wkdir = os.getcwd()
-    modeldir = os.path.dirname(os.path.dirname(wkdir))
+    modeldir = os.path.dirname(wkdir)
     for i in ['class.nls', 'func.nls', 'main.nlogo', 'plot.nls', 'setup.nls', 'write.nls']:
         try:
             os.path.isfile(str(modeldir + '/' + i))
@@ -187,7 +185,7 @@ def create_sensitivity_file(out_dir, sens_type, sens_var, no_sens, sensitivity):
     config += str('# End of file')
 
     # Write file
-    out_file = str(os.path.dirname(os.path.dirname(os.getcwd())) + '\\02_Output\\' + out_dir + '\\sensitivity.config')
+    out_file = str(os.path.dirname(os.getcwd()) + '\\02_Output\\' + out_dir + '\\sensitivity.config')
     with open(out_file, 'w') as file:
         file.write(config)
 
@@ -242,7 +240,7 @@ def create_out_folder():
     '''
     wkdir = os.getcwd()
     date = datetime.now().strftime('%Y-%m-%d-%H-%M')
-    outdir = os.path.dirname(os.path.dirname(wkdir)) + '\\02_Output\\' + date + '\\'
+    outdir = os.path.dirname(wkdir) + '\\02_Output\\' + date + '\\'
 
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
@@ -263,7 +261,7 @@ def create_sens_folder(out_dir, no_sens):
         str sens_dir: name of the sensitivity folder
     '''
     wkdir = os.getcwd()
-    sensdir = (os.path.dirname(os.path.dirname(wkdir)) + '\\02_Output\\' + out_dir + '\\Sensitivity_' + str(no_sens)
+    sensdir = (os.path.dirname(wkdir) + '\\02_Output\\' + out_dir + '\\Sensitivity_' + str(no_sens)
                + '\\')
 
     if not os.path.isdir(sensdir):
@@ -456,7 +454,7 @@ def main():
 
     # Copy run.init file to folder
     init_file = str(os.getcwd() + '\\runs.init')
-    out_file = str(os.path.dirname(os.path.dirname(os.getcwd())) + '\\02_Output\\' + out_dir + '\\runs.init')
+    out_file = str(os.path.dirname(os.getcwd()) + '\\02_Output\\' + out_dir + '\\runs.init')
     shutil.copy(init_file, out_file)
 
     # Create sensitivity.config

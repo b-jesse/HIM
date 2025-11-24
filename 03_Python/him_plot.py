@@ -22,8 +22,8 @@ global ListOutdir
 global ResultDir
 global NoConCurrentRuns
 
-ListOutdir = ['2024-08-01-17-17']
-ResultDir = 'D:\\Jesse\\ABM\\02_NetLogo\\02_Output'
+ListOutdir = ['2025-11-24-17-23']
+ResultDir = 'D:\\USER\\ABM\\02_Output' # CHANGE THIS
 NoConCurrentRuns = 28
 
 def main():
