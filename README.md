@@ -2,13 +2,12 @@
 <a href="https://www.uu.nl/en"><img src="https://www.uu.nl/themes/custom/corp/src/images/uu-logo-en.svg" alt="Utrecht University Logo" width="300px"></a>
 
 # HIM - Hydrogen Investment Model
-HIM is an agent-based model for investment decisions in the German electricity and green hydrogen sectors. The included scripts allow the model to run without the GUI of Netlogo and multiple runs in parallel. It allows to generate the results from our paper `Exploring the Scale-up of a Green Hydrogen Industry: An Agent-Based Modeling Approach` in the International Journal for Hydrogen Energy. 
+HIM is an agent-based model for investment decisions in the German electricity and green hydrogen sectors. The included scripts allow the model to run without the GUI of Netlogo and multiple runs in parallel. It allows to generate the results from our paper [Exploring the Scale-up of a Green Hydrogen Industry: An Agent-Based Modeling Approach](https://doi.org/10.1016/j.ijhydene.2025.152695) in the International Journal for Hydrogen Energy. 
 
 <img src="https://github.com/b-jesse/HIM/blob/main/00_Setup/Figure-1.png?raw=true" alt="Model overview" width="600px">
 
 The model itself is written for [NetLogo v.6.4.0](https://www.netlogo.org/). Pre- and postprocessing scripts are written in python.
-If you want to use HIM in a published work, please use the following citation:
-`Jesse et al. 2025, Exploring the Scale-up of a Green Hydrogen Industry: An Agent-Based Modeling Approach. International Journal for Hydrogen Energy 2025 (in progress)`
+If you want to use HIM in a published work, please cite [this paper](https://doi.org/10.1016/j.ijhydene.2025.152695).
 
 ## Installation
 - Install [NetLogo v6.4.0](https://ccl.northwestern.edu/netlogo/oldversions.shtml)
