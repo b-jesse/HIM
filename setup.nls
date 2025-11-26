@@ -299,7 +299,7 @@ to setup-constants []
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
   ; Global
   set const.discount_rate 0.05
-  set const.eta_gas_turbine 0.5
+  set const.eta_gas_turbine 0.4
   set const.eta_electrolyzer 0.7
   set const.eta_steam_reforming 0.7
   
@@ -342,8 +342,8 @@ to setup-constants []
   set const.MAN.lifetime 20
   set const.MAN.lifetime_range 5
   set const.MAN.target_capacity 10000
-  set const.MAN.new_capacity 250
-  set const.MAN.learning_rate 0.16
+  set const.MAN.new_capacity 500
+  set const.MAN.learning_rate 0.1
   
   ; Update values for sensitivity analysis
   ;; Try to load config file
@@ -379,12 +379,12 @@ to setup-init []
   set init.PM.c_gas_0 33 ;[€/MWh]
   set init.PM.c_coal_0 12.0 ;[€/MWh]
   set init.PM.c_oil_0 61.52 ;[€/MWh]
-  set init.PM.c_res_0 1000000 ;[€/MW]
+  set init.PM.c_res_0 1250000 ;[€/MW]
   
   ;; Set the initial values for the hydrogen market
   set init.HM.no_hp_0 6
   set init.HM.no_elc_0 6
-  set init.HM.c_elc_0 5000000 ;[€/MW]
+  set init.HM.c_elc_0 2500000 ;[€/MW]
   ifelse scenario.ref [
     set init.HM.threshold_0 0
   ][
