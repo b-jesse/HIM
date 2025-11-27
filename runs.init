@@ -1,0 +1,66 @@
+# Model settings
+plot: false
+write: true
+debug: false
+track: false
+
+# Scenario settings
+ref: false
+co2_tax: true
+h2_subsidy: false
+h2_guarant: false
+res_subsidy: false
+power_subsidy: false
+power_guarant: false
+elc_subsidy: false
+elc_guarant: false
+man_subsidy: false
+time_lag: false
+
+# No of Runs
+runs: 100
+concurrent_runs: 25
+
+# Sensitivity variables
+sensitivity: none
+parameters: [init.HM.threshold_0]
+
+# Default values
+const.beta: 1.0
+const.PM.delta_threshold: 0.05
+const.HM.delta_threshold: 0.05
+const.EM.delta_threshold: 0.05
+const.gamma: 1.0
+init.HM.threshold_0: -0.990
+init.EM.threshold_0: -0.990
+const.EM.inexperience_penalty_max: 0.0
+const.EM.global_share: 0.1
+const.MAN.learning_rate: 0.1
+GOV.h2_subsidy: 0
+GOV.h2_guarant: 0
+GOV.res_subsidy: 0
+GOV.power_subsidy: 0
+GOV.power_guarant: 0
+GOV.elc_subsidy: 0
+GOV.elc_guarant: 0
+GOV.man_subsidy: 0
+
+# Ranges for sensitivity analysis
+const.beta: [0.1, 10.0]
+const.PM.delta_threshold: [0.1, 1.0]
+const.HM.delta_threshold: [0.01, 1.0]
+const.EM.delta_threshold: [0.01, 0.1]
+const.gamma: [0, 10]
+init.HM.threshold_0: [0.0, -0.9]
+init.EM.threshold_0: [0.0, -0.9]
+const.EM.inexperience_penalty_max: [0.1, 1]
+const.EM.global_share [0.1 0.9]
+const.MAN.learning_rate: [0.01, 0.9]
+GOV.h2_subsidy: [0.1 1]
+GOV.h2_guarant: [0.1 1]
+GOV.res_subsidy: [0.1 1]
+GOV.power_subsidy: [0.1 1]
+GOV.power_guarant: [0.1 1]
+GOV.elc_subsidy: [0.1 1]
+GOV.elc_guarant: [0.1 1]
+GOV.man_subsidy:[0.1 1]
